@@ -9,6 +9,7 @@
 namespace App\Controller;
 
 
+use App\Services;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,6 +27,16 @@ use RecursiveIteratorIterator;
 
 class MainPageController extends AbstractController
 {
+
+    public $helper;
+    public $fileSystem;
+
+
+    public function __construct(Services\HelperService $helper, Services\FileSystemService $fileSystem) {
+        $this->helper = $helper;
+        $this->fileSystem = $fileSystem;
+    }
+
 
     public CONST FILE_EXTENSIONS = [
         'IMAGES' => ['jpg', 'png', 'jpeg', 'webp'],
@@ -98,7 +109,7 @@ class MainPageController extends AbstractController
 
 
         return new Response(
-            'There are no jobs in the database',
+            'showFolder',
             Response::HTTP_OK
         );
 
@@ -155,12 +166,12 @@ class MainPageController extends AbstractController
             }
         }
 
-
-        var_dump($arrResult);
+        $this->helper->prent($arrResult);
+        //var_dump($arrResult);
 
 
         return new Response(
-            'There are no jobs in the database',
+            'getFiles',
             Response::HTTP_OK
         );
     }
@@ -189,7 +200,7 @@ class MainPageController extends AbstractController
 
 
         return new Response(
-            'There are no jobs in the database',
+            'getBasket',
             Response::HTTP_OK
         );
     }
@@ -224,10 +235,51 @@ class MainPageController extends AbstractController
 
 
         return new Response(
-            'There are no jobs in the database',
+            'cleanBasket',
             Response::HTTP_OK
         );
     }
+
+
+
+    /**
+     * @Route("/create-folder")
+     */
+    public function createFolder()
+    {
+
+        $path = '/storage/user_files/newFolder21212';
+        $this->fileSystem->createFolder($path);
+
+
+        return new Response(
+            'createFolder',
+            Response::HTTP_OK
+        );
+    }
+
+
+    /**
+     * @Route("/add-to-basket")
+     */
+    public function addToBasket()
+    {
+
+        $origin = '/storage/user_files/subDirectory1';
+
+
+        $this->fileSystem->move($origin);
+
+        return new Response(
+            'addToBasket',
+            Response::HTTP_OK
+        );
+    }
+
+
+
+
+
 
 }
 
