@@ -18,13 +18,25 @@ use Symfony\Bundle\FrameworkBundle\Controller;
 
 use Symfony\Component\Finder\Finder;
 
+use RecursiveDirectoryIterator;
+use FilesystemIterator;
+use RecursiveIteratorIterator;
+
 
 
 class MainPageController extends AbstractController
 {
-   /**
-   * @Route("/")
-   */
+
+    public CONST FILE_EXTENSIONS = [
+        'IMAGES' => ['jpg', 'png', 'jpeg', 'webp'],
+        'AUDIO' => ['mp3', 'aac', 'wav', 'flac'],
+        'VIDEO' => ['mp4', 'avi', 'mov', 'mpeg'],
+    ];
+
+
+    /**
+     * @Route("/")
+     */
     public function renderMainPage()
     {
 
@@ -41,7 +53,7 @@ class MainPageController extends AbstractController
     public function showFolder()
     {
 
-        $storagePath = $_SERVER['DOCUMENT_ROOT'].'/storage/';
+        $storagePath = $_SERVER['DOCUMENT_ROOT'] . '/storage/';
 
         $finder = new Finder();
 
@@ -71,19 +83,18 @@ class MainPageController extends AbstractController
         //TODO в таблицу вместо иконок классы
 
         //getting files
-/*        $arrFiles = [];
-        $finder->files()->in($storagePath);
+        /*        $arrFiles = [];
+                $finder->files()->in($storagePath);
 
-        if ($finder->hasResults()) {
-            foreach ($finder as $file) {
-                $arrFiles[] = $file->getRelativePathname();
-            }
-        }
+                if ($finder->hasResults()) {
+                    foreach ($finder as $file) {
+                        $arrFiles[] = $file->getRelativePathname();
+                    }
+                }
 
 
-        var_dump($arrDirectories);
-        var_dump($arrFiles);*/
-
+                var_dump($arrDirectories);
+                var_dump($arrFiles);*/
 
 
         return new Response(
@@ -96,62 +107,56 @@ class MainPageController extends AbstractController
 
 
     /**
-     * @Route("/get-images")
+     * @Route("/get-data/{directory}/{type}")
      */
-    public function getImages()
+    public function getFiles($directory, $type = false)
     {
 
-        //TODO сделать эту функцию универсальной для всех файлов
+        //TODO доработать получение конкретной папки
+
+        switch ($type) {
+            case "img":
+                $arrFileExtensions = self::FILE_EXTENSIONS['IMAGES'];
+                break;
+            case "audio":
+                $arrFileExtensions = self::FILE_EXTENSIONS['AUDIO'];
+                break;
+            case "video":
+                $arrFileExtensions = self::FILE_EXTENSIONS['VIDEO'];
+                break;
+            default:
+                $arrFileExtensions = false;
+        }
 
 
-        //TODO все это в один массив запихнуть
-        $arrImgExtensions = ['jpg', 'png', 'jpeg', 'webp'];
-        $arrAudioExtensions = ['mp3', 'aac', 'wav', 'flac'];
-        $arrVideoExtensions = ['mp4', 'avi', 'mov', 'mpeg'];
-
-
-
-        $storagePath = $_SERVER['DOCUMENT_ROOT'].'/storage/';
+        $storagePath = $_SERVER['DOCUMENT_ROOT'] . '/storage/' . $directory . '/';
         $finder = new Finder();
         $finder->files()->in($storagePath);
         $arrResult = [];
 
 
-
-        $arrFileExtensions = $arrVideoExtensions;
-
-
         if ($finder->hasResults()) {
             foreach ($finder as $file) {
                 $fileName = $file->getRelativePathname();
-
-
-                //var_dump($fileName);
-
                 list($name, $extension) = explode('.', $fileName);
-/*
-                var_dump($name);
-                var_dump($extension);*/
 
 
-                if (in_array($extension, $arrFileExtensions)) {
+                if (is_array($arrFileExtensions)) {
+                    //selected type of files
+                    if (in_array($extension, $arrFileExtensions)) {
+                        $arrResult[] = $fileName;
+                    }
+                } else {
+                    //all files
                     $arrResult[] = $fileName;
                 }
 
-
-/*                if (str_contains($entityName, '.')) {
-                    $arrFiles[] = $entityName;
-                } else {
-                    $arrDirectories[] = $entityName;
-                }*/
 
             }
         }
 
 
         var_dump($arrResult);
-
-
 
 
         return new Response(
@@ -161,4 +166,69 @@ class MainPageController extends AbstractController
     }
 
 
+    /**
+     * @Route("/basket/")
+     */
+    public function getBasket()
+    {
+        $basketPath = $_SERVER['DOCUMENT_ROOT'] . '/storage/basket/';
+        $finder = new Finder();
+        $finder->in($basketPath);
+        $arrResult = [];
+
+
+        if ($finder->hasResults()) {
+            foreach ($finder as $file) {
+                $fileName = $file->getRelativePathname();
+                $arrResult[] = $fileName;
+            }
+        }
+
+
+        var_dump($arrResult);
+
+
+        return new Response(
+            'There are no jobs in the database',
+            Response::HTTP_OK
+        );
+    }
+
+
+    /**
+     * @Route("/clean-basket/")
+     */
+    public function cleanBasket()
+    {
+
+        $basketPath = $_SERVER['DOCUMENT_ROOT'] . '/storage/basket/';
+        $basket = scandir($basketPath);
+        unset($basket[0], $basket[1]);
+
+
+        if (count($basket) > 0) {
+            //var_dump('НЕ ПУСТАЯ');
+            $directoryIterator = new RecursiveDirectoryIterator($basketPath, FilesystemIterator::SKIP_DOTS);
+            $recursiveIterator = new RecursiveIteratorIterator($directoryIterator, RecursiveIteratorIterator::CHILD_FIRST);
+
+            foreach ($recursiveIterator as $file) {
+                $file->isDir() ? rmdir($file) : unlink($file);
+            }
+        } else {
+            //var_dump('ПУСТАЯ');
+            return new Response(
+                'Basket is empty',
+                Response::HTTP_OK
+            );
+        }
+
+
+        return new Response(
+            'There are no jobs in the database',
+            Response::HTTP_OK
+        );
+    }
+
 }
+
+
