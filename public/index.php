@@ -1,7 +1,4 @@
 <?php
-//TODO версию php 8.1 поставить
-//phpinfo();
-//exit();
 use App\Kernel;
 
 require_once dirname(__DIR__).'/vendor/autoload.php';
