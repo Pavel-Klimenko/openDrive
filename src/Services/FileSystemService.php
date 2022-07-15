@@ -38,20 +38,18 @@ class FileSystemService {
 
 
 
-    public function move($origin) {
+    public function move($origin, $target, $type = false) {
 
         $origin = $_SERVER['DOCUMENT_ROOT'] . $origin;
+        $target = $_SERVER['DOCUMENT_ROOT'] . $target;
 
-        $arrOrigin = explode('/', $origin);
-        $target = $_SERVER['DOCUMENT_ROOT'] . '/storage/basket/' . end($arrOrigin);
+        //$this->helper->prent($target);
 
-        $this->helper->prent($target);
-
-        //TODO реализовать сохранине в базу старого пути для восстановления их корзины
 
         if ($this->fileSystem->exists($origin)) {
 
-            $type = (is_dir($origin)) ? 'folder' : 'file';
+            if (!$type) $type = (is_dir($origin)) ? 'folder' : 'file';
+
 
             if ($type == 'file') {
                 $this->fileSystem->copy($origin, $target, true);

@@ -9,6 +9,7 @@
 namespace App\Controller;
 
 
+use App\Entity\Basket;
 use App\Services;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,6 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller;
+
 
 use Symfony\Component\Finder\Finder;
 
@@ -32,7 +34,18 @@ class MainPageController extends AbstractController
     public $fileSystem;
 
 
-    public function __construct(Services\HelperService $helper, Services\FileSystemService $fileSystem) {
+    /** @var EntityManagerInterface */
+    private $entityManager;
+
+
+
+    public function __construct(
+        Services\HelperService $helper,
+        Services\FileSystemService $fileSystem,
+        EntityManagerInterface $entityManager
+    )
+    {
+        $this->entityManager = $entityManager;
         $this->helper = $helper;
         $this->fileSystem = $fileSystem;
     }
@@ -266,9 +279,26 @@ class MainPageController extends AbstractController
     {
 
         $origin = '/storage/user_files/subDirectory1';
+        $arrOrigin = explode('/', $origin);
+        $itemName = end($arrOrigin);
+        $target = '/storage/basket/' . $itemName;
+        $type = (is_dir($_SERVER['DOCUMENT_ROOT'] . $origin)) ? 'folder' : 'file';
 
 
-        $this->fileSystem->move($origin);
+        $this->fileSystem->move($origin, $target);
+
+
+        $basket = new Basket();
+        $basket->setType($type);
+        $basket->setPath($origin);
+        $basket->setItem($itemName);
+
+        // сообщите Doctrine, что вы хотите (в итоге) сохранить Продукт (пока без запросов)
+        $this->entityManager->persist($basket);
+
+        // действительно выполните запросы (например, запрос INSERT)
+        $this->entityManager->flush();
+
 
         return new Response(
             'addToBasket',
@@ -277,10 +307,38 @@ class MainPageController extends AbstractController
     }
 
 
+    /**
+     * @Route("/restore-from-basket")
+     */
+    public function restoreFromBasket()
+    {
+
+        $itemName = 'subDirectory1';
+        $basketRepository = $this->entityManager->getRepository(Basket::class);
+
+        $basketItem = $basketRepository->findOneBy(['item' => $itemName]);
 
 
+        $origin = '/storage/basket/' . $itemName;
+        $target = $basketItem->getPath();
+
+
+/*        $this->helper->prent($origin);
+        $this->helper->prent($target);*/
+
+        //Restoring item to it`s previous location
+        $this->fileSystem->move($origin, $target);
+
+
+        //Deleting item from basket table
+        $this->entityManager->remove($basketItem);
+        $this->entityManager->flush();
+
+        return new Response(
+            'restoreFromBasket',
+            Response::HTTP_OK
+        );
+    }
 
 
 }
-
-

@@ -19,13 +19,15 @@ class Basket
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $path;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private $item;
+
 
 
     public function getId(): ?int
     {
         return $this->id;
     }
-
 
 
     public function getType(): ?string
@@ -41,15 +43,29 @@ class Basket
     }
 
 
-
     public function getPath(): ?string
     {
         return $this->path;
     }
+
 
     public function setPath(?string $path): self
     {
         $this->path= $path;
         return $this;
     }
+
+
+    public function getItem(): ?string
+    {
+        return $this->item;
+    }
+
+
+    public function setItem(?string $item): self
+    {
+        $this->item = $item;
+        return $this;
+    }
+
 }
