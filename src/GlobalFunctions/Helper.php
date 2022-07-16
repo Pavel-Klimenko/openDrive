@@ -6,12 +6,12 @@
  * Time: 00:18
  */
 
-namespace App\Services;
+namespace App\GlobalFunctions;
 
 
-class HelperService {
+class Helper {
 
-    public function prent($var) {
+    public static function prent($var) {
 
         //$bt = debug_backtrace();
         //$bt = $bt[0];

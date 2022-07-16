@@ -18,6 +18,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller;
 
+use App\GlobalFunctions\Helper;
 
 use Symfony\Component\Finder\Finder;
 
@@ -30,7 +31,6 @@ use RecursiveIteratorIterator;
 class MainPageController extends AbstractController
 {
 
-    public $helper;
     public $fileSystem;
 
 
@@ -40,13 +40,11 @@ class MainPageController extends AbstractController
 
 
     public function __construct(
-        Services\HelperService $helper,
         Services\FileSystemService $fileSystem,
         EntityManagerInterface $entityManager
     )
     {
         $this->entityManager = $entityManager;
-        $this->helper = $helper;
         $this->fileSystem = $fileSystem;
     }
 
@@ -173,7 +171,7 @@ class MainPageController extends AbstractController
             }
         }
 
-        $this->helper->prent($arrResult);
+        //$this->helper->prent($arrResult);
         //var_dump($arrResult);
 
 
@@ -417,7 +415,7 @@ class MainPageController extends AbstractController
         $result['SIZE_OF_OTHER_FILES']['PERCENTAGE_OF_TOTAL'] = ($spaceUsedByOtherFiles / $totalUsedSize) * 100;
 
 
-        $this->helper->prent($result);
+        Helper::prent($result);
 
 
         return new Response(

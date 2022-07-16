@@ -17,7 +17,6 @@ use Symfony\Component\Filesystem\Path;
 
 class FileSystemService {
 
-    public $helper;
     public $fileSystem;
 
 
@@ -29,8 +28,7 @@ class FileSystemService {
     ];
 
 
-    public function __construct(Services\HelperService $helper) {
-        $this->helper = $helper;
+    public function __construct() {
         $this->fileSystem = new Filesystem();
     }
 
