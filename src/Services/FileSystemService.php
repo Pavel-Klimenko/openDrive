@@ -21,6 +21,14 @@ class FileSystemService {
     public $fileSystem;
 
 
+    public CONST FILE_EXTENSIONS = [
+        'IMAGES' => ['jpg', 'png', 'jpeg', 'webp'],
+        'AUDIO' => ['mp3', 'aac', 'wav', 'flac'],
+        'VIDEO' => ['mp4', 'avi', 'mov', 'mpeg'],
+        'DOCUMENTS' => ['txt', 'doc', 'doc', 'pdf'],
+    ];
+
+
     public function __construct(Services\HelperService $helper) {
         $this->helper = $helper;
         $this->fileSystem = new Filesystem();
@@ -73,6 +81,11 @@ class FileSystemService {
      */
     public function FileSizeConvert($bytes)
     {
+
+
+        if ($bytes == 0) return 0;
+
+
         $bytes = floatval($bytes);
         $arBytes = array(
             0 => array(
@@ -107,6 +120,17 @@ class FileSystemService {
             }
         }
         return $result;
+    }
+
+
+    public function getFileType($extension) {
+        foreach (self::FILE_EXTENSIONS as $fileType => $arrFileTypes) {
+            if (in_array($extension, $arrFileTypes)) {
+                return $fileType;
+            }
+        }
+
+        return 'OTHER';
     }
 
 

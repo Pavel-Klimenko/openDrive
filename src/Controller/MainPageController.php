@@ -51,12 +51,6 @@ class MainPageController extends AbstractController
     }
 
 
-    public CONST FILE_EXTENSIONS = [
-        'IMAGES' => ['jpg', 'png', 'jpeg', 'webp'],
-        'AUDIO' => ['mp3', 'aac', 'wav', 'flac'],
-        'VIDEO' => ['mp4', 'avi', 'mov', 'mpeg'],
-    ];
-
 
     /**
      * @Route("/")
@@ -140,13 +134,13 @@ class MainPageController extends AbstractController
 
         switch ($type) {
             case "img":
-                $arrFileExtensions = self::FILE_EXTENSIONS['IMAGES'];
+                $arrFileExtensions = $this->fileSystem::FILE_EXTENSIONS['IMAGES'];
                 break;
             case "audio":
-                $arrFileExtensions = self::FILE_EXTENSIONS['AUDIO'];
+                $arrFileExtensions = $this->fileSystem::FILE_EXTENSIONS['AUDIO'];
                 break;
             case "video":
-                $arrFileExtensions = self::FILE_EXTENSIONS['VIDEO'];
+                $arrFileExtensions = $this->fileSystem::FILE_EXTENSIONS['VIDEO'];
                 break;
             default:
                 $arrFileExtensions = false;
@@ -350,17 +344,6 @@ class MainPageController extends AbstractController
 
 
         $storagePath = $_SERVER['DOCUMENT_ROOT'] . '/storage/';
-
-        //$directoryIterator = new RecursiveDirectoryIterator($storagePath, FilesystemIterator::SKIP_DOTS);
-        //$recursiveIterator = new RecursiveIteratorIterator($directoryIterator, RecursiveIteratorIterator::CHILD_FIRST);
-
-        //foreach ($recursiveIterator as $file) {
-            //$this->helper->prent($file);
-
-            //$file->isDir() ? rmdir($file) : unlink($file);
-        //}
-
-
         $directory = new RecursiveDirectoryIterator($storagePath);
         $directory->setFlags(RecursiveDirectoryIterator::SKIP_DOTS);
 
@@ -369,28 +352,72 @@ class MainPageController extends AbstractController
             RecursiveIteratorIterator::SELF_FIRST
         );
 
-        $list = [];
+        $result = [];
+        $totalUsedSize = 0;
+        $spaceUsedByImages = 0;
+        $spaceUsedByMedia = 0;
+        $spaceUsedByDocuments = 0;
+        $spaceUsedByOtherFiles = 0;
+
         foreach ($files as $file) {
-            if (
-                $file->isDir() == false
-                //$file->getExtension() === 'csv'
-            ) {
-/*                $this->helper->prent($file->getBasename());
-                $this->helper->prent($file->getSize());*/
+            if (!$file->isDir()) {
 
                 $fileName = $file->getBasename();
                 $fileSizeInBytes = $file->getSize();
+                $fileExtension = $file->getExtension();
+                $fileType = $this->fileSystem->getFileType($fileExtension);
 
-                $list[$fileName]['NAME'] = $fileName;
-                $list[$fileName]['SIZE_IN_BYTES'] = $fileSizeInBytes;
-                $list[$fileName]['SIZE_FOR_DISPLAY'] = $this->fileSystem->FileSizeConvert($fileSizeInBytes);
+                $totalUsedSize += $fileSizeInBytes;
+
+
+                switch ($fileType) {
+                    case 'IMAGES':
+                        $spaceUsedByImages += $fileSizeInBytes;
+                        break;
+                    case 'AUDIO':
+                        $spaceUsedByMedia += $fileSizeInBytes;
+                        break;
+                    case 'VIDEO':
+                        $spaceUsedByMedia += $fileSizeInBytes;
+                        break;
+                    case 'DOCUMENTS':
+                        $spaceUsedByDocuments += $fileSizeInBytes;
+                        break;
+                    default:
+                        $spaceUsedByOtherFiles += $fileSizeInBytes;
+                }
+
+
+
+                $result['FILES'][$fileName]['NAME'] = $fileName;
+                $result['FILES'][$fileName]['EXTENSION'] = $fileExtension;
+                $result['FILES'][$fileName]['FILE_TYPE'] = $fileType;
+                $result['FILES'][$fileName]['SIZE_IN_BYTES'] = $fileSizeInBytes;
+                $result['FILES'][$fileName]['SIZE_FOR_DISPLAY'] = $this->fileSystem->FileSizeConvert($fileSizeInBytes);
             }
         }
 
+        $result['TOTAL_SIZE']['IN_BYTES'] = $totalUsedSize;
+        $result['TOTAL_SIZE']['FOR_DISPLAY'] = $this->fileSystem->FileSizeConvert($totalUsedSize);
 
-        $this->helper->prent($list);
+        $result['SIZE_OF_IMAGES']['IN_BYTES'] = $spaceUsedByImages;
+        $result['SIZE_OF_IMAGES']['FOR_DISPLAY'] = $this->fileSystem->FileSizeConvert($spaceUsedByImages);
+        $result['SIZE_OF_IMAGES']['PERCENTAGE_OF_TOTAL'] = ($spaceUsedByImages / $totalUsedSize) * 100;
+
+        $result['SIZE_OF_MEDIA']['IN_BYTES'] = $spaceUsedByMedia;
+        $result['SIZE_OF_MEDIA']['FOR_DISPLAY'] = $this->fileSystem->FileSizeConvert($spaceUsedByMedia);
+        $result['SIZE_OF_MEDIA']['PERCENTAGE_OF_TOTAL'] = ($spaceUsedByMedia / $totalUsedSize) * 100;
+
+        $result['SIZE_OF_DOCUMENTS']['IN_BYTES'] = $spaceUsedByDocuments;
+        $result['SIZE_OF_DOCUMENTS']['FOR_DISPLAY'] = $this->fileSystem->FileSizeConvert($spaceUsedByDocuments);
+        $result['SIZE_OF_DOCUMENTS']['PERCENTAGE_OF_TOTAL'] = ($spaceUsedByDocuments / $totalUsedSize) * 100;
+
+        $result['SIZE_OF_OTHER_FILES']['IN_BYTES'] = $spaceUsedByOtherFiles;
+        $result['SIZE_OF_OTHER_FILES']['FOR_DISPLAY'] = $this->fileSystem->FileSizeConvert($spaceUsedByOtherFiles);
+        $result['SIZE_OF_OTHER_FILES']['PERCENTAGE_OF_TOTAL'] = ($spaceUsedByOtherFiles / $totalUsedSize) * 100;
 
 
+        $this->helper->prent($result);
 
 
         return new Response(
