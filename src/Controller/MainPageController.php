@@ -341,4 +341,68 @@ class MainPageController extends AbstractController
     }
 
 
+    /**
+     * @Route("/get-user-disk-info")
+     */
+    public function getUserDiskInfo()
+    {
+        //TODO передавать ID диска конкретного пользователя
+
+
+        $storagePath = $_SERVER['DOCUMENT_ROOT'] . '/storage/';
+
+        //$directoryIterator = new RecursiveDirectoryIterator($storagePath, FilesystemIterator::SKIP_DOTS);
+        //$recursiveIterator = new RecursiveIteratorIterator($directoryIterator, RecursiveIteratorIterator::CHILD_FIRST);
+
+        //foreach ($recursiveIterator as $file) {
+            //$this->helper->prent($file);
+
+            //$file->isDir() ? rmdir($file) : unlink($file);
+        //}
+
+
+        $directory = new RecursiveDirectoryIterator($storagePath);
+        $directory->setFlags(RecursiveDirectoryIterator::SKIP_DOTS);
+
+        $files = new RecursiveIteratorIterator(
+            $directory,
+            RecursiveIteratorIterator::SELF_FIRST
+        );
+
+        $list = [];
+        foreach ($files as $file) {
+            if (
+                $file->isDir() == false
+                //$file->getExtension() === 'csv'
+            ) {
+/*                $this->helper->prent($file->getBasename());
+                $this->helper->prent($file->getSize());*/
+
+                $fileName = $file->getBasename();
+                $fileSizeInBytes = $file->getSize();
+
+                $list[$fileName]['NAME'] = $fileName;
+                $list[$fileName]['SIZE_IN_BYTES'] = $fileSizeInBytes;
+                $list[$fileName]['SIZE_FOR_DISPLAY'] = $this->fileSystem->FileSizeConvert($fileSizeInBytes);
+            }
+        }
+
+
+        $this->helper->prent($list);
+
+
+
+
+        return new Response(
+            'getUserDiskInfo',
+            Response::HTTP_OK
+        );
+    }
+
+
+
+
+
+
+
 }
