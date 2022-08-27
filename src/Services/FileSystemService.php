@@ -19,13 +19,15 @@ class FileSystemService {
 
     public $fileSystem;
 
-
     public CONST FILE_EXTENSIONS = [
-        'IMAGES' => ['jpg', 'png', 'jpeg', 'webp'],
-        'AUDIO' => ['mp3', 'aac', 'wav', 'flac'],
-        'VIDEO' => ['mp4', 'avi', 'mov', 'mpeg'],
-        'DOCUMENTS' => ['txt', 'doc', 'doc', 'pdf'],
+        'img' => ['jpg', 'png', 'jpeg', 'webp'],
+        'audio' => ['mp3', 'aac', 'wav', 'flac'],
+        'video' => ['mp4', 'avi', 'mov', 'mpeg'],
+        'documents' => ['txt', 'doc', 'doc', 'pdf'],
+        'archives' => ['rar', 'zip', '7z', 'tar'],
     ];
+
+    public CONST BASE_PATH = 'user_files';
 
 
     public function __construct() {
@@ -129,6 +131,66 @@ class FileSystemService {
         }
 
         return 'OTHER';
+    }
+
+
+    public function getFileTypeExtensions($type): array
+    {
+        switch ($type) {
+            case "img":
+                $arrFileExtensions = self::FILE_EXTENSIONS['img'];
+                break;
+            case "audio":
+                $arrFileExtensions = self::FILE_EXTENSIONS['audio'];
+                break;
+            case "video":
+                $arrFileExtensions = self::FILE_EXTENSIONS['video'];
+                break;
+            case "documents":
+                $arrFileExtensions = self::FILE_EXTENSIONS['documents'];
+                break;
+            case "archives":
+                $arrFileExtensions = self::FILE_EXTENSIONS['archives'];
+                break;
+            default:
+                $arrFileExtensions = [];
+        }
+
+        return $arrFileExtensions;
+    }
+
+
+    public function getFileStyles($type): array
+    {
+        switch ($type) {
+            case "documents":
+                $textColorClass = 'text-success';
+                $iconClass = 'bx bxs-file-doc';
+                break;
+            case "img":
+                $textColorClass = 'text-primary';
+                $iconClass = 'bx bx-image';
+                break;
+            case "video":
+                $textColorClass = 'text-danger';
+                $iconClass = 'bx bx-video';
+                break;
+            case "audio":
+                $textColorClass = 'text-primary';
+                $iconClass = 'bx bx-video';
+                break;
+            case "archives":
+                $textColorClass = 'text-warning';
+                $iconClass = 'bx bx-image';
+                break;
+            default:
+                $arrFileExtensions = [];
+        }
+
+        return [
+            'COLOR_CLASS' => $textColorClass,
+            'ICON_CLASS' => $iconClass
+        ];
     }
 
 

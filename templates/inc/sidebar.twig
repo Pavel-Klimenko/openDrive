@@ -5,17 +5,25 @@
                 </div>
                 <h5 class="my-3">My Drive</h5>
                 <div class="fm-menu">
-                    <div class="list-group list-group-flush"> <a href="javascript:;" class="list-group-item py-1"><i class="bx bx-folder me-2"></i><span>All Files</span></a>
-                        <a href="javascript:;" class="list-group-item py-1"><i class="bx bx-devices me-2"></i><span>My Devices</span></a>
+
+
+                 {# TODO доделать меню#}
+                    {#возможно сделать на JS лучше#}
+                    {#{{ response.current_path }}#}
+                 {#   href="{{ asset('/get-data/'~response.current_path~'documents/') }}"#}
+
+
+                    <div class="list-group list-group-flush"> <a href="{{ asset('/get-data/subDirectory1/') }}" class="list-group-item py-1"><i class="bx bx-folder me-2"></i><span>All Files</span></a>
+{#                        <a href="javascript:;" class="list-group-item py-1"><i class="bx bx-devices me-2"></i><span>My Devices</span></a>
                         <a href="javascript:;" class="list-group-item py-1"><i class="bx bx-analyse me-2"></i><span>Recents</span></a>
                         <a href="javascript:;" class="list-group-item py-1"><i class="bx bx-plug me-2"></i><span>Important</span></a>
                         <a href="javascript:;" class="list-group-item py-1"><i class="bx bx-trash-alt me-2"></i><span>Deleted Files</span></a>
-                        <a href="javascript:;" class="list-group-item py-1"><i class="bx bx-file me-2"></i>
-                            <span>Documents</span></a>
-                        <a href="javascript:;" class="list-group-item py-1"><i class="bx bx-image me-2"></i><span>Images</span></a>
-                        <a href="javascript:;" class="list-group-item py-1"><i class="bx bx-video me-2"></i><span>Videos</span></a>
-                        <a href="javascript:;" class="list-group-item py-1"><i class="bx bx-music me-2"></i><span>Audio</span></a>
-                        <a href="javascript:;" class="list-group-item py-1"><i class="bx bx-beer me-2"></i><span>Zip Files</span></a>
+                        #}
+                        <a href="{{ asset('/get-data/'~response.current_path~'/documents/') }}" class="list-group-item py-1"><i class="bx bx-file me-2"></i><span>Documents</span></a>
+                        <a href="{{ asset('/get-data/'~response.current_path~'/img/') }}" class="list-group-item py-1"><i class="bx bx-image me-2"></i><span>Images</span></a>
+                        <a href="{{ asset('/get-data/'~response.current_path~'/video/') }}" class="list-group-item py-1"><i class="bx bx-video me-2"></i><span>Videos</span></a>
+                        <a href="{{ asset('/get-data/'~response.current_path~'/audio/') }}" class="list-group-item py-1"><i class="bx bx-music me-2"></i><span>Audio</span></a>
+                        <a href="{{ asset('/get-data/'~response.current_path~'/archives/') }}" class="list-group-item py-1"><i class="bx bx-beer me-2"></i><span>Archives</span></a>
                     </div>
                 </div>
             </div>

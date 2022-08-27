@@ -64,15 +64,14 @@ class MainPageController extends AbstractController
 
 
     /**
-     * @Route("/show-folder")
+     * @Route("/show-folder/")
      */
     public function showFolder()
     {
 
+
         $storagePath = $_SERVER['DOCUMENT_ROOT'] . '/storage/';
-
         $finder = new Finder();
-
         $finder->in($storagePath);
 
 
@@ -123,62 +122,58 @@ class MainPageController extends AbstractController
 
 
     /**
-     * @Route("/get-data/{directory}/{type}")
+     * @Route("/get-data/{path}/{type}")
      */
-    public function getFiles($directory, $type = false)
+    public function getFiles($path = false, $type = false)
     {
 
-        //TODO доработать получение конкретной папки
 
-        switch ($type) {
-            case "img":
-                $arrFileExtensions = $this->fileSystem::FILE_EXTENSIONS['IMAGES'];
-                break;
-            case "audio":
-                $arrFileExtensions = $this->fileSystem::FILE_EXTENSIONS['AUDIO'];
-                break;
-            case "video":
-                $arrFileExtensions = $this->fileSystem::FILE_EXTENSIONS['VIDEO'];
-                break;
-            default:
-                $arrFileExtensions = false;
+/*        $path = false;
+        $storagePath =  $_SERVER['DOCUMENT_ROOT'] . '/storage' . '/' . $this->fileSystem::BASE_PATH . '/';
+
+        if ($path) {
+            $storagePath = $storagePath . $path . '/';
+        }*/
+
+        $path = 'newFolder21212';
+
+        if ($path) {
+            $path = $this->fileSystem::BASE_PATH .'/'. $path;
+        } else {
+            $path = $this->fileSystem::BASE_PATH;
         }
 
 
-        $storagePath = $_SERVER['DOCUMENT_ROOT'] . '/storage/' . $directory . '/';
-        $finder = new Finder();
-        $finder->files()->in($storagePath);
-        $arrResult = [];
+
+        /*TODO доделать роуты в меню*/
+
+        //корневая папка http://opendrive/get-data/user_files/img
+        //вложенная папка http://opendrive/get-data/user_files/newFolder21212/img
 
 
-        if ($finder->hasResults()) {
-            foreach ($finder as $file) {
-                $fileName = $file->getRelativePathname();
-                list($name, $extension) = explode('.', $fileName);
 
 
-                if (is_array($arrFileExtensions)) {
-                    //selected type of files
-                    if (in_array($extension, $arrFileExtensions)) {
-                        $arrResult[] = $fileName;
-                    }
-                } else {
-                    //all files
-                    $arrResult[] = $fileName;
-                }
+
+        $storagePath =  $_SERVER['DOCUMENT_ROOT'] . '/storage' . '/'. $path . '/';
 
 
-            }
-        }
-
-        //$this->helper->prent($arrResult);
-        //var_dump($arrResult);
+        var_dump($storagePath);
 
 
-        return new Response(
-            'getFiles',
-            Response::HTTP_OK
-        );
+        $arrDirectories = $this->getStorageDirectories($storagePath);
+        $arrFiles = $this->getStorageFiles($storagePath, $type);
+
+         $response = [
+             'folders' => $arrDirectories,
+             'files' => $arrFiles,
+             'current_path' => $path
+         ];
+
+
+        return $this->render('user-data.html.twig', [
+            'response' => $response,
+        ]);
+
     }
 
 
@@ -187,6 +182,7 @@ class MainPageController extends AbstractController
      */
     public function getBasket()
     {
+
         $basketPath = $_SERVER['DOCUMENT_ROOT'] . '/storage/basket/';
         $finder = new Finder();
         $finder->in($basketPath);
@@ -199,9 +195,6 @@ class MainPageController extends AbstractController
                 $arrResult[] = $fileName;
             }
         }
-
-
-        var_dump($arrResult);
 
 
         return new Response(
@@ -426,8 +419,60 @@ class MainPageController extends AbstractController
 
 
 
+    private function getStorageFiles(string $storagePath, $type = false) {
+        $arrFileExtensions = $this->fileSystem->getFileTypeExtensions($type);
+
+        $finder = new Finder();
+        $finder->files()->in($storagePath);
+        $arrResult = [];
+
+        if ($finder->hasResults()) {
+            $counter = 0;
+            foreach ($finder as $file) {
+                $fileName = $file->getRelativePathname();
+                list($name, $extension) = explode('.', $fileName);
+                $fileType = $this->fileSystem->getFileType($extension);
+
+                if (!empty($arrFileExtensions)) {
+                    //selected type of files
+                    if (in_array($extension, $arrFileExtensions)) {
+                        $arrResult[$counter]['NAME'] = $fileName;
+                        $arrResult[$counter]['EXTENSION'] = $extension;
+                        $arrResult[$counter]['FILE_TYPE'] = $fileType;
+                        $arrResult[$counter]['FILE_STYLES'] = $this->fileSystem->getFileStyles($type);
+                    }
+                } else {
+                    //all files
+                    $arrResult[$counter]['NAME'] = $fileName;
+                    $arrResult[$counter]['EXTENSION'] = $extension;
+                    $arrResult[$counter]['FILE_TYPE'] = $fileType;
+                    $arrResult[$counter]['FILE_STYLES'] = $this->fileSystem->getFileStyles($fileType);
+                }
+
+                $counter++;
+            }
+        }
+
+        return $arrResult;
+    }
 
 
+    private function getStorageDirectories(string $storagePath)
+    {
+        $finder = new Finder();
+        $finder->directories()->in($storagePath);
+        $arrResult = [];
+
+        if ($finder->hasResults()) {
+            foreach ($finder as $directory) {
+                if ($directoryName = $directory->getRelativePathname()) {
+                    $arrResult[] = $directoryName;
+                }
+            }
+        }
+
+        return $arrResult;
+    }
 
 
 }
