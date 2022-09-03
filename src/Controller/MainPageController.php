@@ -31,6 +31,7 @@ use RecursiveIteratorIterator;
 class MainPageController extends AbstractController
 {
 
+
     public $fileSystem;
 
 
@@ -55,11 +56,7 @@ class MainPageController extends AbstractController
      */
     public function renderMainPage()
     {
-
-        return $this->render('main-page.html.twig', [
-            'number' => 1,
-        ]);
-
+        return $this->getFiles('/user_files');
     }
 
 
@@ -122,52 +119,42 @@ class MainPageController extends AbstractController
 
 
     /**
-     * @Route("/get-data/{path}/{type}")
+     * @Route("/{path}/{fileType}")
      */
-    public function getFiles($path = false, $type = false)
+    public function getFiles($path, $fileType = false)
     {
 
+        //var_dump($path);
+        //var_dump($fileType);
 
-/*        $path = false;
-        $storagePath =  $_SERVER['DOCUMENT_ROOT'] . '/storage' . '/' . $this->fileSystem::BASE_PATH . '/';
 
-        if ($path) {
-            $storagePath = $storagePath . $path . '/';
-        }*/
-
-        $path = 'newFolder21212';
-
-        if ($path) {
-            $path = $this->fileSystem::BASE_PATH .'/'. $path;
+        if (str_contains($path, '-')) {
+            $arLink = explode('-', $path);
+            $storagePath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . implode('/', $arLink);
         } else {
-            $path = $this->fileSystem::BASE_PATH;
+            $storagePath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH .$path;
         }
 
 
-
-        /*TODO доделать роуты в меню*/
-
-        //корневая папка http://opendrive/get-data/user_files/img
-        //вложенная папка http://opendrive/get-data/user_files/newFolder21212/img
-
-
-
-
-
-        $storagePath =  $_SERVER['DOCUMENT_ROOT'] . '/storage' . '/'. $path . '/';
-
-
-        var_dump($storagePath);
+        //var_dump($storagePath);
 
 
         $arrDirectories = $this->getStorageDirectories($storagePath);
-        $arrFiles = $this->getStorageFiles($storagePath, $type);
+        $arrFiles = $this->getStorageFiles($storagePath, $fileType);
 
          $response = [
              'folders' => $arrDirectories,
              'files' => $arrFiles,
              'current_path' => $path
          ];
+
+
+        //var_dump($response);
+
+
+/*        $ssss = $this->getUserDiskInfo();
+        var_dump($ssss);*/
+
 
 
         return $this->render('user-data.html.twig', [
@@ -321,98 +308,6 @@ class MainPageController extends AbstractController
 
         return new Response(
             'restoreFromBasket',
-            Response::HTTP_OK
-        );
-    }
-
-
-    /**
-     * @Route("/get-user-disk-info")
-     */
-    public function getUserDiskInfo()
-    {
-        //TODO передавать ID диска конкретного пользователя
-
-
-        $storagePath = $_SERVER['DOCUMENT_ROOT'] . '/storage/';
-        $directory = new RecursiveDirectoryIterator($storagePath);
-        $directory->setFlags(RecursiveDirectoryIterator::SKIP_DOTS);
-
-        $files = new RecursiveIteratorIterator(
-            $directory,
-            RecursiveIteratorIterator::SELF_FIRST
-        );
-
-        $result = [];
-        $totalUsedSize = 0;
-        $spaceUsedByImages = 0;
-        $spaceUsedByMedia = 0;
-        $spaceUsedByDocuments = 0;
-        $spaceUsedByOtherFiles = 0;
-
-        foreach ($files as $file) {
-            if (!$file->isDir()) {
-
-                $fileName = $file->getBasename();
-                $fileSizeInBytes = $file->getSize();
-                $fileExtension = $file->getExtension();
-                $fileType = $this->fileSystem->getFileType($fileExtension);
-
-                $totalUsedSize += $fileSizeInBytes;
-
-
-                switch ($fileType) {
-                    case 'IMAGES':
-                        $spaceUsedByImages += $fileSizeInBytes;
-                        break;
-                    case 'AUDIO':
-                        $spaceUsedByMedia += $fileSizeInBytes;
-                        break;
-                    case 'VIDEO':
-                        $spaceUsedByMedia += $fileSizeInBytes;
-                        break;
-                    case 'DOCUMENTS':
-                        $spaceUsedByDocuments += $fileSizeInBytes;
-                        break;
-                    default:
-                        $spaceUsedByOtherFiles += $fileSizeInBytes;
-                }
-
-
-
-                $result['FILES'][$fileName]['NAME'] = $fileName;
-                $result['FILES'][$fileName]['EXTENSION'] = $fileExtension;
-                $result['FILES'][$fileName]['FILE_TYPE'] = $fileType;
-                $result['FILES'][$fileName]['SIZE_IN_BYTES'] = $fileSizeInBytes;
-                $result['FILES'][$fileName]['SIZE_FOR_DISPLAY'] = $this->fileSystem->FileSizeConvert($fileSizeInBytes);
-            }
-        }
-
-        $result['TOTAL_SIZE']['IN_BYTES'] = $totalUsedSize;
-        $result['TOTAL_SIZE']['FOR_DISPLAY'] = $this->fileSystem->FileSizeConvert($totalUsedSize);
-
-        $result['SIZE_OF_IMAGES']['IN_BYTES'] = $spaceUsedByImages;
-        $result['SIZE_OF_IMAGES']['FOR_DISPLAY'] = $this->fileSystem->FileSizeConvert($spaceUsedByImages);
-        $result['SIZE_OF_IMAGES']['PERCENTAGE_OF_TOTAL'] = ($spaceUsedByImages / $totalUsedSize) * 100;
-
-        $result['SIZE_OF_MEDIA']['IN_BYTES'] = $spaceUsedByMedia;
-        $result['SIZE_OF_MEDIA']['FOR_DISPLAY'] = $this->fileSystem->FileSizeConvert($spaceUsedByMedia);
-        $result['SIZE_OF_MEDIA']['PERCENTAGE_OF_TOTAL'] = ($spaceUsedByMedia / $totalUsedSize) * 100;
-
-        $result['SIZE_OF_DOCUMENTS']['IN_BYTES'] = $spaceUsedByDocuments;
-        $result['SIZE_OF_DOCUMENTS']['FOR_DISPLAY'] = $this->fileSystem->FileSizeConvert($spaceUsedByDocuments);
-        $result['SIZE_OF_DOCUMENTS']['PERCENTAGE_OF_TOTAL'] = ($spaceUsedByDocuments / $totalUsedSize) * 100;
-
-        $result['SIZE_OF_OTHER_FILES']['IN_BYTES'] = $spaceUsedByOtherFiles;
-        $result['SIZE_OF_OTHER_FILES']['FOR_DISPLAY'] = $this->fileSystem->FileSizeConvert($spaceUsedByOtherFiles);
-        $result['SIZE_OF_OTHER_FILES']['PERCENTAGE_OF_TOTAL'] = ($spaceUsedByOtherFiles / $totalUsedSize) * 100;
-
-
-        Helper::prent($result);
-
-
-        return new Response(
-            'getUserDiskInfo',
             Response::HTTP_OK
         );
     }

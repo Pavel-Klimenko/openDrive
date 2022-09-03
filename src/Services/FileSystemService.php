@@ -27,8 +27,9 @@ class FileSystemService {
         'archives' => ['rar', 'zip', '7z', 'tar'],
     ];
 
-    public CONST BASE_PATH = 'user_files';
 
+    public CONST BASE_PATH = 'user_files/';
+    public CONST STORAGE_PATH = '/storage/';
 
     public function __construct() {
         $this->fileSystem = new Filesystem();
@@ -130,7 +131,7 @@ class FileSystemService {
             }
         }
 
-        return 'OTHER';
+        return 'other';
     }
 
 
@@ -184,7 +185,8 @@ class FileSystemService {
                 $iconClass = 'bx bx-image';
                 break;
             default:
-                $arrFileExtensions = [];
+                $textColorClass = 'text-info';
+                $iconClass = 'bx bx-image';
         }
 
         return [

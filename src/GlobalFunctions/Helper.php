@@ -11,19 +11,10 @@ namespace App\GlobalFunctions;
 
 class Helper {
 
-    public static function prent($var) {
-
-        //$bt = debug_backtrace();
-        //$bt = $bt[0];
-        //$file = $bt["file"];
-        //$line = $bt["line"];
-
-        //echo "<div style='padding:3px 5px; background:#99CCFF; font-weight:bold;'>File: $file [$line]</div>";
-        echo '<pre>';
-        var_dump($var);
-        echo '</pre>';
+    public static function getPercentOfTotal($part, $total, $precision = false) {
+        $percent = ($part / $total) * 100;
+        if ($precision) $percent = round($percent, $precision);
+        return $percent;
     }
-
-
 
 }
