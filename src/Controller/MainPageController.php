@@ -27,10 +27,13 @@ use FilesystemIterator;
 use RecursiveIteratorIterator;
 
 
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+
+
 
 class MainPageController extends AbstractController
 {
-
 
     public $fileSystem;
 
@@ -51,13 +54,15 @@ class MainPageController extends AbstractController
 
 
 
+
+    /*TODO прописать нормальные роуты*/
     /**
-     * @Route("/")
+     * @Route("/21312312312313")
      */
-    public function renderMainPage()
+/*    public function renderMainPage()
     {
         return $this->getFiles('/user_files');
-    }
+    }*/
 
 
     /**
@@ -65,7 +70,6 @@ class MainPageController extends AbstractController
      */
     public function showFolder()
     {
-
 
         $storagePath = $_SERVER['DOCUMENT_ROOT'] . '/storage/';
         $finder = new Finder();
@@ -91,22 +95,22 @@ class MainPageController extends AbstractController
         var_dump($arrFiles);
         var_dump($arrDirectories);
 
-        //TODO красиво вывести в шаблон
-        //TODO в таблицу вместо иконок классы
+//TODO красиво вывести в шаблон
+//TODO в таблицу вместо иконок классы
 
-        //getting files
-        /*        $arrFiles = [];
-                $finder->files()->in($storagePath);
+//getting files
+        /* $arrFiles = [];
+        $finder->files()->in($storagePath);
 
-                if ($finder->hasResults()) {
-                    foreach ($finder as $file) {
-                        $arrFiles[] = $file->getRelativePathname();
-                    }
-                }
+        if ($finder->hasResults()) {
+        foreach ($finder as $file) {
+        $arrFiles[] = $file->getRelativePathname();
+        }
+        }
 
 
-                var_dump($arrDirectories);
-                var_dump($arrFiles);*/
+        var_dump($arrDirectories);
+        var_dump($arrFiles);*/
 
 
         return new Response(
@@ -118,14 +122,16 @@ class MainPageController extends AbstractController
     }
 
 
+    /*TODO прописать нормальные роуты*/
+
     /**
-     * @Route("/{path}/{fileType}")
+     * @Route("/get-files/{path}/{fileType}")
      */
     public function getFiles($path, $fileType = false)
     {
 
-        //var_dump($path);
-        //var_dump($fileType);
+//var_dump($path);
+//var_dump($fileType);
 
 
         if (str_contains($path, '-')) {
@@ -136,23 +142,23 @@ class MainPageController extends AbstractController
         }
 
 
-        //var_dump($storagePath);
+//var_dump($storagePath);
 
 
         $arrDirectories = $this->getStorageDirectories($storagePath);
         $arrFiles = $this->getStorageFiles($storagePath, $fileType);
 
-         $response = [
-             'folders' => $arrDirectories,
-             'files' => $arrFiles,
-             'current_path' => $path
-         ];
+        $response = [
+            'folders' => $arrDirectories,
+            'files' => $arrFiles,
+            'current_path' => $path
+        ];
 
 
-        //var_dump($response);
+//var_dump($response);
 
 
-/*        $ssss = $this->getUserDiskInfo();
+        /* $ssss = $this->getUserDiskInfo();
         var_dump($ssss);*/
 
 
@@ -203,7 +209,7 @@ class MainPageController extends AbstractController
 
 
         if (count($basket) > 0) {
-            //var_dump('НЕ ПУСТАЯ');
+//var_dump('НЕ ПУСТАЯ');
             $directoryIterator = new RecursiveDirectoryIterator($basketPath, FilesystemIterator::SKIP_DOTS);
             $recursiveIterator = new RecursiveIteratorIterator($directoryIterator, RecursiveIteratorIterator::CHILD_FIRST);
 
@@ -211,7 +217,7 @@ class MainPageController extends AbstractController
                 $file->isDir() ? rmdir($file) : unlink($file);
             }
         } else {
-            //var_dump('ПУСТАЯ');
+//var_dump('ПУСТАЯ');
             return new Response(
                 'Basket is empty',
                 Response::HTTP_OK
@@ -265,10 +271,10 @@ class MainPageController extends AbstractController
         $basket->setPath($origin);
         $basket->setItem($itemName);
 
-        // сообщите Doctrine, что вы хотите (в итоге) сохранить Продукт (пока без запросов)
+// сообщите Doctrine, что вы хотите (в итоге) сохранить Продукт (пока без запросов)
         $this->entityManager->persist($basket);
 
-        // действительно выполните запросы (например, запрос INSERT)
+// действительно выполните запросы (например, запрос INSERT)
         $this->entityManager->flush();
 
 
@@ -295,7 +301,7 @@ class MainPageController extends AbstractController
         $target = $basketItem->getPath();
 
 
-/*        $this->helper->prent($origin);
+        /* $this->helper->prent($origin);
         $this->helper->prent($target);*/
 
         //Restoring item to it`s previous location
@@ -311,6 +317,7 @@ class MainPageController extends AbstractController
             Response::HTTP_OK
         );
     }
+
 
 
 
@@ -368,6 +375,5 @@ class MainPageController extends AbstractController
 
         return $arrResult;
     }
-
 
 }

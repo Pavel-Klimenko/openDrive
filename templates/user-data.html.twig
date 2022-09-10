@@ -6,6 +6,10 @@
 {% block body %}
     {{ include('inc/sidebar.twig') }}
 
+   {# <div class="context-menu-one">нажать на правую кнопку мыши</div>#}
+    {#<div id="res"></div>#}
+
+
     <div class="col-12 col-lg-9">
         <div class="card">
             <div class="card-body">
@@ -22,11 +26,15 @@
                 </div>
                 <br/>
 
+
                 {% if response.folders %}
+                    {#TODO сделать хлебную крошку#}
+
                     <h5>Folders:</h5>
                     <div class="row mt-3">
                         {% for foldername in response.folders %}
-                            <div class="col-12 col-lg-4">
+                            <div class="col-12 col-lg-4 context-menu">
+                                <a href="{{ asset(''~response.current_path~'-'~foldername~'') }}" style="text-decoration: none">
                                 <div class="card shadow-none border radius-15">
                                     <div class="card-body">
                                         <div class="d-flex align-items-center">
@@ -38,11 +46,17 @@
                                              </div>
                                              <div class="user-plus">+</div>#}
                                         </div>
-                                        <h6 class="mb-0 text-primary">{{ foldername }}</h6>
+
+                                            <h6 class="mb-0 text-primary">{{ foldername }}</h6>
+
+
                                         {#<small>15 files</small>#}
                                     </div>
                                 </div>
+                            </a>
                             </div>
+
+
                         {% endfor %}
                     </div>
                 {% endif %}
@@ -72,7 +86,7 @@
                             {% for file in response.files %}
                                 <tr>
                                     <td>
-                                        <div class="d-flex align-items-center">
+                                        <div class="d-flex align-items-center context-menu" data-test="test" style="cursor: pointer">
                                             <div>
                                                 <i class="{{ file.FILE_STYLES.ICON_CLASS }} me-2 font-24 {{ file.FILE_STYLES.COLOR_CLASS }}"></i>
                                             </div>
@@ -83,6 +97,7 @@
                                     <td>{{ file.FILE_TYPE }}</td>
                                     </td>
                                 </tr>
+                                <a href="{{ asset('/storage/user_files/belhard.jpg') }}" download />Download</a>
                             {% endfor %}
 
                             </tbody>

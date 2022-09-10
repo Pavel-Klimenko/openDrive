@@ -97,3 +97,20 @@ body{
 .rounded-circle {
     border-radius: 50%!important;
 }
+
+
+
+/*context menu styles*/
+body {
+    padding: 5px;
+    font: 12px verdana;
+}
+
+.context-menu-one {
+    border: 1px solid #C2C2C2;
+    padding: 10px;
+}
+
+#res {
+    margin-top: 10px;
+}
