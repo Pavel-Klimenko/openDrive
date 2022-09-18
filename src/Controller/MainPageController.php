@@ -57,12 +57,18 @@ class MainPageController extends AbstractController
 
     /*TODO прописать нормальные роуты*/
     /**
-     * @Route("/21312312312313")
+     * @Route("/")
      */
-/*    public function renderMainPage()
+    public function renderMainPage()
     {
-        return $this->getFiles('/user_files');
-    }*/
+        //return $this->getFiles('/user_files');
+
+        return new Response(
+            'mainpage',
+            Response::HTTP_OK
+        );
+
+    }
 
 
     /**
@@ -95,10 +101,10 @@ class MainPageController extends AbstractController
         var_dump($arrFiles);
         var_dump($arrDirectories);
 
-//TODO красиво вывести в шаблон
-//TODO в таблицу вместо иконок классы
+    //TODO красиво вывести в шаблон
+    //TODO в таблицу вместо иконок классы
 
-//getting files
+    //getting files
         /* $arrFiles = [];
         $finder->files()->in($storagePath);
 
@@ -130,8 +136,8 @@ class MainPageController extends AbstractController
     public function getFiles($path, $fileType = false)
     {
 
-//var_dump($path);
-//var_dump($fileType);
+        //var_dump($path);
+        //var_dump($fileType);
 
 
         if (str_contains($path, '-')) {
@@ -142,7 +148,7 @@ class MainPageController extends AbstractController
         }
 
 
-//var_dump($storagePath);
+        //var_dump($storagePath);
 
 
         $arrDirectories = $this->getStorageDirectories($storagePath);
@@ -155,7 +161,7 @@ class MainPageController extends AbstractController
         ];
 
 
-//var_dump($response);
+        //var_dump($response);
 
 
         /* $ssss = $this->getUserDiskInfo();
@@ -250,76 +256,6 @@ class MainPageController extends AbstractController
     }
 
 
-    /**
-     * @Route("/add-to-basket")
-     */
-    public function addToBasket()
-    {
-
-        $origin = '/storage/user_files/subDirectory1';
-        $arrOrigin = explode('/', $origin);
-        $itemName = end($arrOrigin);
-        $target = '/storage/basket/' . $itemName;
-        $type = (is_dir($_SERVER['DOCUMENT_ROOT'] . $origin)) ? 'folder' : 'file';
-
-
-        $this->fileSystem->move($origin, $target);
-
-
-        $basket = new Basket();
-        $basket->setType($type);
-        $basket->setPath($origin);
-        $basket->setItem($itemName);
-
-// сообщите Doctrine, что вы хотите (в итоге) сохранить Продукт (пока без запросов)
-        $this->entityManager->persist($basket);
-
-// действительно выполните запросы (например, запрос INSERT)
-        $this->entityManager->flush();
-
-
-        return new Response(
-            'addToBasket',
-            Response::HTTP_OK
-        );
-    }
-
-
-    /**
-     * @Route("/restore-from-basket")
-     */
-    public function restoreFromBasket()
-    {
-
-        $itemName = 'subDirectory1';
-        $basketRepository = $this->entityManager->getRepository(Basket::class);
-
-        $basketItem = $basketRepository->findOneBy(['item' => $itemName]);
-
-
-        $origin = '/storage/basket/' . $itemName;
-        $target = $basketItem->getPath();
-
-
-        /* $this->helper->prent($origin);
-        $this->helper->prent($target);*/
-
-        //Restoring item to it`s previous location
-        $this->fileSystem->move($origin, $target);
-
-
-        //Deleting item from basket table
-        $this->entityManager->remove($basketItem);
-        $this->entityManager->flush();
-
-        return new Response(
-            'restoreFromBasket',
-            Response::HTTP_OK
-        );
-    }
-
-
-
 
     private function getStorageFiles(string $storagePath, $type = false) {
         $arrFileExtensions = $this->fileSystem->getFileTypeExtensions($type);
@@ -375,5 +311,38 @@ class MainPageController extends AbstractController
 
         return $arrResult;
     }
+
+
+    /**
+     * @Route("/file-upload", name="fileUpload")
+     */
+    public function fileUpload(Request $request)
+    {
+        //dd($request);
+
+        $newFile = $request->files->get('new_file');
+        $currentPath = $request->request->get('current_path');
+
+
+        dd($newFile);
+
+        $currentPath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $currentPath .'/';
+
+
+        //dd($currentPath);
+
+
+        //TODO move не работает - разобраться!
+
+        $newFile->move($currentPath, 'test.jpg');
+
+        return new Response(
+            'fileUpload',
+            Response::HTTP_OK
+        );
+    }
+
+
+
 
 }

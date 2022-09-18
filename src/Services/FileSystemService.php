@@ -9,10 +9,12 @@
 namespace App\Services;
 
 use App\Services;
+use App\Entity\Basket;
 use phpDocumentor\Reflection\Type;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Path;
+use Doctrine\ORM\EntityManagerInterface;
 
 
 class FileSystemService {
@@ -31,8 +33,9 @@ class FileSystemService {
     public CONST BASE_PATH = 'user_files/';
     public CONST STORAGE_PATH = '/storage/';
 
-    public function __construct() {
+    public function __construct(EntityManagerInterface $entityManager) {
         $this->fileSystem = new Filesystem();
+        $this->entityManager = $entityManager;
     }
 
 
@@ -48,17 +51,8 @@ class FileSystemService {
 
 
     public function move($origin, $target, $type = false) {
-
-        $origin = $_SERVER['DOCUMENT_ROOT'] . $origin;
-        $target = $_SERVER['DOCUMENT_ROOT'] . $target;
-
-        //$this->helper->prent($target);
-
-
         if ($this->fileSystem->exists($origin)) {
-
             if (!$type) $type = (is_dir($origin)) ? 'folder' : 'file';
-
 
             if ($type == 'file') {
                 $this->fileSystem->copy($origin, $target, true);
@@ -69,7 +63,6 @@ class FileSystemService {
             if ($this->fileSystem->exists($target)) $this->fileSystem->remove($origin);
 
         }
-
     }
 
 
@@ -193,6 +186,75 @@ class FileSystemService {
             'COLOR_CLASS' => $textColorClass,
             'ICON_CLASS' => $iconClass
         ];
+    }
+
+
+
+    public function addToBasket($origin)
+    {
+        $arrOrigin = explode('/', $origin);
+        $itemName = end($arrOrigin);
+        $target = $_SERVER['DOCUMENT_ROOT'].'/storage/basket/' . $itemName;
+
+        $type = (is_dir($_SERVER['DOCUMENT_ROOT'] . $origin)) ? 'folder' : 'file';
+
+
+        $this->move($origin, $target);
+
+        $basket = new Basket();
+        $basket->setType($type);
+        $basket->setPath($origin);
+        $basket->setItem($itemName);
+
+        $this->entityManager->persist($basket);
+        $this->entityManager->flush();
+
+    }
+
+
+    public function restoreFromBasket($itemName)
+    {
+        $basketRepository = $this->entityManager->getRepository(Basket::class);
+
+        $basketItem = $basketRepository->findOneBy(['item' => $itemName]);
+
+
+        var_dump($basketItem);
+
+
+        $origin = $_SERVER['DOCUMENT_ROOT'].'/storage/basket/' . $itemName;
+        $target = $basketItem->getPath();
+
+
+        /* $this->helper->prent($origin);
+        $this->helper->prent($target);*/
+
+
+        var_dump($origin);
+
+        var_dump($target);
+
+
+        //Restoring item to it`s previous location
+        $this->move($origin, $target);
+
+
+        //Deleting item from basket table
+        $this->entityManager->remove($basketItem);
+        $this->entityManager->flush();
+    }
+
+
+
+
+/*    public function remove($linkToFile) {
+
+        $this->fileSystem->remove(array($linkToFile));
+    }*/
+
+
+    public function rename($oldName, $newName) {
+        $this->fileSystem->rename($oldName, $newName);
     }
 
 

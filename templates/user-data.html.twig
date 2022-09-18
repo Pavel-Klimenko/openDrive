@@ -34,7 +34,7 @@
                     <div class="row mt-3">
                         {% for foldername in response.folders %}
                             <div class="col-12 col-lg-4 context-menu">
-                                <a href="{{ asset(''~response.current_path~'-'~foldername~'') }}" style="text-decoration: none">
+                                <a href="{{ asset('/get-files/'~response.current_path~'-'~foldername~'') }}" style="text-decoration: none">
                                 <div class="card shadow-none border radius-15">
                                     <div class="card-body">
                                         <div class="d-flex align-items-center">
@@ -97,7 +97,6 @@
                                     <td>{{ file.FILE_TYPE }}</td>
                                     </td>
                                 </tr>
-                                <a href="{{ asset('/storage/user_files/belhard.jpg') }}" download />Download</a>
                             {% endfor %}
 
                             </tbody>

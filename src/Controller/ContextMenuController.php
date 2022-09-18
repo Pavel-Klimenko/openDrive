@@ -16,17 +16,13 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
+
 use Symfony\Bundle\FrameworkBundle\Controller;
-
 use App\GlobalFunctions\Helper;
-
 use Symfony\Component\Finder\Finder;
-
 use RecursiveDirectoryIterator;
 use FilesystemIterator;
 use RecursiveIteratorIterator;
-
-
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
@@ -43,10 +39,7 @@ class ContextMenuController extends AbstractController
 
 
 
-    public function __construct(
-        Services\FileSystemService $fileSystem,
-        EntityManagerInterface $entityManager
-    )
+    public function __construct(Services\FileSystemService $fileSystem, EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
         $this->fileSystem = $fileSystem;
@@ -65,6 +58,76 @@ class ContextMenuController extends AbstractController
 
         return $this->file($linkToFile);
     }
+
+    /**
+     * @Route("/file-delete/{link}")
+     */
+    public function fileDelete($link)
+    {
+        $link = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->fileSystem::BASE_PATH . $link;
+        $this->fileSystem->addToBasket($link);
+
+
+        return new Response(
+            Response::HTTP_OK
+        );
+    }
+
+
+    /**
+     * @Route("/file-restore/{itemName}")
+     */
+    public function restoreFromBasket($itemName)
+    {
+        $this->fileSystem->restoreFromBasket($itemName);
+
+        return new Response(
+            Response::HTTP_OK
+        );
+    }
+
+
+
+    /**
+     * @Route("/file-rename/")
+     */
+    public function rename()
+    {
+
+        $oldName = 'subDirectory1';
+        $newName = 'subDirectoryNEW';
+
+        $oldName = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->fileSystem::BASE_PATH . $oldName;
+        $newName = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->fileSystem::BASE_PATH . $newName;
+
+
+        var_dump($oldName);
+        var_dump($newName);
+
+        $this->fileSystem->rename($oldName, $newName);
+
+        return new Response(
+            Response::HTTP_OK
+        );
+    }
+
+
+
+    /**
+     * @Route("/file-move/{link}")
+     */
+    public function filemove($link)
+    {
+        $link = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->fileSystem::BASE_PATH . $link;
+        $this->fileSystem->addToBasket($link);
+
+
+        return new Response(
+            Response::HTTP_OK
+        );
+    }
+
+
 
 
     /**
@@ -100,7 +163,6 @@ class ContextMenuController extends AbstractController
             'showFolder',
             Response::HTTP_OK
         );
-
     }
 
 
