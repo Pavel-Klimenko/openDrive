@@ -26,6 +26,8 @@
                 </div>
                 <br/>
 
+                <input type="hidden" id="currentPath" value="{{ response.canonical_current_path }}">
+
 
                 {% if response.folders %}
                     {#TODO сделать хлебную крошку#}
@@ -86,7 +88,11 @@
                             {% for file in response.files %}
                                 <tr>
                                     <td>
-                                        <div class="d-flex align-items-center context-menu" data-test="test" style="cursor: pointer">
+                                        <div class="d-flex align-items-center context-menu"
+                                             data-file-url="{{ file.FILE_URL }}"
+                                             data-file-name="{{ file.NAME }}"
+                                             data-file-size="{{ file.FILE_SIZE }}"
+                                             style="cursor: pointer">
                                             <div>
                                                 <i class="{{ file.FILE_STYLES.ICON_CLASS }} me-2 font-24 {{ file.FILE_STYLES.COLOR_CLASS }}"></i>
                                             </div>
@@ -105,9 +111,13 @@
                 {% else %}
                     <div class="table-responsive mt-3 text-danger">Files not found</div>
                 {% endif %}
-
-
             </div>
         </div>
     </div>
+
+    {# Modal windows #}
+
+    {{ include('inc/popup_file_props.twig') }}
+    {{ include('inc/popup_file_rename.twig') }}
+
 {% endblock %}

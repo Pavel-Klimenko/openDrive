@@ -1,0 +1,21 @@
+<!-- Modal HTML -->
+<div id="popupFileRename" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">RENAME FILE:</h5>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ path('fileRename') }}">
+                    <div class="form-group rename_inputs">
+                        <label for="renameFile">Type new file name:</label>
+                        <input type="hidden" name="FILE_PATH">
+                        <input type="hidden" name="FILE_OLD_NAME">
+                        <input type="text" name="FILE_NEW_MAME" class="form-control" placeholder="type new file name">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Accept file name</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

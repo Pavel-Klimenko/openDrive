@@ -253,9 +253,12 @@ class FileSystemService {
     }*/
 
 
-    public function rename($oldName, $newName) {
-        $this->fileSystem->rename($oldName, $newName);
-    }
+/*    public function downloadFile($linkToFile) {
+        $linkToFile
+
+            return $this->file('/home/website/upload/'.$someFile)
+    }*/
+
 
 
 

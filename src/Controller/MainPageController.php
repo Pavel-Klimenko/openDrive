@@ -18,6 +18,9 @@ use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller;
 
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
+
 use App\GlobalFunctions\Helper;
 
 use Symfony\Component\Finder\Finder;
@@ -36,6 +39,8 @@ class MainPageController extends AbstractController
 {
 
     public $fileSystem;
+    public $coreFileSystem;
+
 
 
     /** @var EntityManagerInterface */
@@ -50,6 +55,7 @@ class MainPageController extends AbstractController
     {
         $this->entityManager = $entityManager;
         $this->fileSystem = $fileSystem;
+        $this->coreFileSystem = new Filesystem();
     }
 
 
@@ -139,7 +145,6 @@ class MainPageController extends AbstractController
         //var_dump($path);
         //var_dump($fileType);
 
-
         if (str_contains($path, '-')) {
             $arLink = explode('-', $path);
             $storagePath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . implode('/', $arLink);
@@ -148,16 +153,14 @@ class MainPageController extends AbstractController
         }
 
 
-        //var_dump($storagePath);
-
-
         $arrDirectories = $this->getStorageDirectories($storagePath);
         $arrFiles = $this->getStorageFiles($storagePath, $fileType);
 
         $response = [
             'folders' => $arrDirectories,
             'files' => $arrFiles,
-            'current_path' => $path
+            'current_path' => $path,
+            'canonical_current_path' => str_replace ( '//', '/', $storagePath)
         ];
 
 
@@ -268,28 +271,37 @@ class MainPageController extends AbstractController
             $counter = 0;
             foreach ($finder as $file) {
                 $fileName = $file->getRelativePathname();
+                $fileUrl = stristr($file->getPathName(), '/storage/');
+                $fileSize = $this->fileSystem->FileSizeConvert($file->getSize());
+
+
                 list($name, $extension) = explode('.', $fileName);
                 $fileType = $this->fileSystem->getFileType($extension);
 
                 if (!empty($arrFileExtensions)) {
                     //selected type of files
                     if (in_array($extension, $arrFileExtensions)) {
+                        $arrResult[$counter]['FILE_URL'] = $fileUrl;
                         $arrResult[$counter]['NAME'] = $fileName;
                         $arrResult[$counter]['EXTENSION'] = $extension;
                         $arrResult[$counter]['FILE_TYPE'] = $fileType;
                         $arrResult[$counter]['FILE_STYLES'] = $this->fileSystem->getFileStyles($type);
+                        $arrResult[$counter]['FILE_SIZE'] = $fileSize;
                     }
                 } else {
                     //all files
+                    $arrResult[$counter]['FILE_URL'] = $fileUrl;
                     $arrResult[$counter]['NAME'] = $fileName;
                     $arrResult[$counter]['EXTENSION'] = $extension;
                     $arrResult[$counter]['FILE_TYPE'] = $fileType;
                     $arrResult[$counter]['FILE_STYLES'] = $this->fileSystem->getFileStyles($fileType);
+                    $arrResult[$counter]['FILE_SIZE'] = $fileSize;
                 }
 
                 $counter++;
             }
         }
+
 
         return $arrResult;
     }
@@ -338,6 +350,29 @@ class MainPageController extends AbstractController
 
         return new Response(
             'fileUpload',
+            Response::HTTP_OK
+        );
+    }
+
+
+
+    /**
+     * @Route("/file-rename", name="fileRename")
+     */
+    public function fileRename(Request $request)
+    {
+        $filePath = $request->request->get('FILE_PATH');
+        $oldName = $request->request->get('FILE_OLD_NAME');
+        $newName = $request->request->get('FILE_NEW_MAME');
+
+        $oldName = $filePath . $oldName;
+        $newName = $filePath . $newName;
+
+        $this->coreFileSystem->rename($oldName, $newName);
+        header('Location: ' . $_SERVER['HTTP_REFERER']);
+
+        return new Response(
+            'fileRename',
             Response::HTTP_OK
         );
     }
