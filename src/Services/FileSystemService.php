@@ -66,6 +66,14 @@ class FileSystemService {
     }
 
 
+
+    public function copy($origin, $target) {
+        if ($this->fileSystem->exists($origin)) {
+            $this->fileSystem->copy($origin, $target, true);
+        }
+    }
+
+
     /**
      * Converts bytes into human readable file size.
      *

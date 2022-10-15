@@ -10,6 +10,7 @@ namespace App\Controller;
 
 
 use App\Entity\Basket;
+use App\Entity\ExchangeBuffer;
 use App\Services;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -376,6 +377,155 @@ class MainPageController extends AbstractController
             Response::HTTP_OK
         );
     }
+
+
+    /**
+     * @Route("/file-copy/{path}/", name="fileCopy")
+     */
+    public function copyFile($path)
+    {
+
+        //TODO вынести в метод
+        if (str_contains($path, '-')) {
+            $arLink = explode('-', $path);
+            $fileName = end($arLink);
+
+
+            array_pop($arLink);
+
+            //var_dump($fileName);
+
+            $currentPath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . implode('/', $arLink);
+        } else {
+            $currentPath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH .$path;
+        }
+
+
+        var_dump($currentPath);
+
+
+
+
+        //TODO добавить пользователя после создания регистрации, авторизации
+        $userId = 1;
+
+
+/*       $bufferAction = $this->getBufferAction($userId, 'copy');
+        var_dump($bufferAction);*/
+
+        $this->setBufferAction($userId, 'copy', $currentPath, $fileName);
+
+
+        //return $this->getFiles('/user_files');
+
+        return new Response(
+            'copy',
+            Response::HTTP_OK
+        );
+
+    }
+
+
+    /**
+     * @Route("/file-paste/{currentPath}", name="filePaste")
+     */
+    public function pasteFile($currentPath)
+    {
+
+        //TODO вынести в метод
+        if (str_contains($currentPath, '-')) {
+            $arLink = explode('-', $currentPath);
+            array_pop($arLink);
+            $targetPath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . implode('/', $arLink);
+        } else {
+            $targetPath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH .$currentPath;
+        }
+
+
+
+        $userId = 1;
+        $copiedFile = $this->getBufferAction($userId, 'copy');
+        $origin = $copiedFile->getFilePath() . '/' . $copiedFile->getFile();
+
+
+        var_dump($origin);
+
+
+        $target = $targetPath . '/' . $copiedFile->getFile();
+
+
+        var_dump($target);
+
+
+        //var_dump($origin);
+        //var_dump($origin);
+        //var_dump($target);
+
+
+        $this->fileSystem->copy($origin, $target);
+
+
+        $this->deleteBufferAction($userId, 'copy');
+
+
+
+        return new Response(
+            'paste',
+            Response::HTTP_OK
+        );
+
+    }
+
+
+
+    private function getBufferAction($userId, $action) {
+        //TODO брать userID глобально
+        $exchangeBuffer = $this->entityManager->getRepository(ExchangeBuffer::class);
+        $bufferAction = $exchangeBuffer->findBy([
+            'user_id' => $userId,
+            'action' => $action,
+        ]);
+
+        return $bufferAction[0];
+
+    }
+
+
+
+    //TODO сделать отдельный сервис для буфера
+
+    private function setBufferAction($userId, $action, $filePath, $fileName) {
+
+        //TODO брать userID глобально
+
+        $buffer = new ExchangeBuffer();
+        $buffer->setUserId($userId);
+        $buffer->setAction($action);
+        $buffer->setFilePath($filePath);
+        $buffer->setFile($fileName);
+
+        $this->entityManager->persist($buffer);
+        $this->entityManager->flush();
+    }
+
+
+
+    private function deleteBufferAction($userId, $action) {
+
+        //TODO брать userID глобально
+
+        $exchangeBuffer = $this->entityManager->getRepository(ExchangeBuffer::class);
+        $bufferAction = $exchangeBuffer->findBy([
+            'user_id' => $userId,
+            'action' => $action,
+        ]);
+
+        $this->entityManager->remove($bufferAction[0]);
+        $this->entityManager->flush();
+    }
+
+
+
 
 
 

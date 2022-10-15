@@ -13,6 +13,7 @@ $.contextMenu({
     items: {
         download:  {name: 'Download'},
         copy:  {name: 'Copy'},
+        paste:  {name: 'Paste'},
         replace: {name: 'Replace'},
         rename:  {name: 'Rename'},
         props:  {name: 'Properties'}
@@ -24,27 +25,37 @@ $.contextMenu({
         let fileLocation = $(this).data('file-url');
         let fileSize = $(this).data('file-size');
 
+        let formattedFilePath = $('#formattedCurrentPath').val();
+
 
 
         console.log(key);
 
+
+        if (key === 'copy') {
+
+
+
+            document.location.href = '/file-copy/' + formattedFilePath + '-' + fileName;
+
+            console.log(formattedFilePath);
+            console.log(fileName);
+
+            ///file-copy/{path}/"
+        }
+
+
+        if (key === 'paste') {
+            document.location.href = '/file-paste/' + formattedFilePath + '-' + fileName;
+        }
+
+
         if (key === 'rename') {
-
-
             let filePath = $('#currentPath').val();
-
-
-            console.log(filePath);
-
             $('#popupFileRename').modal("show");
-
-
-
             $('.rename_inputs input[name=FILE_PATH]').val(filePath + '/');
             $('.rename_inputs input[name=FILE_OLD_NAME]').val(fileName);
             $('.rename_inputs input[name=FILE_NEW_MAME]').val(fileName);
-
-            //downLoadFile($(this).data('file-url'));
         }
 
 
