@@ -409,11 +409,18 @@ class MainPageController extends AbstractController
         //TODO добавить пользователя после создания регистрации, авторизации
         $userId = 1;
 
+        $isMove = true;
+
+
+        //копировать или переместить?
+
+        $actionType = ($isMove) ? 'move' : 'copy';
+
 
 /*       $bufferAction = $this->getBufferAction($userId, 'copy');
         var_dump($bufferAction);*/
 
-        $this->setBufferAction($userId, 'copy', $currentPath, $fileName);
+        $this->setBufferAction($userId, $actionType, $currentPath, $fileName);
 
 
         //return $this->getFiles('/user_files');
@@ -424,6 +431,16 @@ class MainPageController extends AbstractController
         );
 
     }
+
+
+
+
+
+
+
+
+
+
 
 
     /**
@@ -444,28 +461,31 @@ class MainPageController extends AbstractController
 
 
         $userId = 1;
-        $copiedFile = $this->getBufferAction($userId, 'copy');
+        $copiedFile = $this->getBufferAction($userId);
         $origin = $copiedFile->getFilePath() . '/' . $copiedFile->getFile();
-
-
-        var_dump($origin);
-
-
         $target = $targetPath . '/' . $copiedFile->getFile();
 
 
+        var_dump($copiedFile);
+
+
+        $action = $copiedFile->getAction();
+
+
+
+        var_dump($copiedFile->getAction());
+        var_dump($origin);
         var_dump($target);
 
 
-        //var_dump($origin);
-        //var_dump($origin);
-        //var_dump($target);
+        if ($action == 'move') {
+            $this->fileSystem->move($origin, $target);
+        } elseif($action == 'copy') {
+            $this->fileSystem->copy($origin, $target);
+        }
 
 
-        $this->fileSystem->copy($origin, $target);
-
-
-        $this->deleteBufferAction($userId, 'copy');
+        $this->deleteBufferAction($userId, $action);
 
 
 
@@ -478,13 +498,12 @@ class MainPageController extends AbstractController
 
 
 
-    private function getBufferAction($userId, $action) {
+    private function getBufferAction($userId) {
         //TODO брать userID глобально
         $exchangeBuffer = $this->entityManager->getRepository(ExchangeBuffer::class);
-        $bufferAction = $exchangeBuffer->findBy([
-            'user_id' => $userId,
-            'action' => $action,
-        ]);
+        $bufferAction = $exchangeBuffer->findBy(
+            ['user_id' => $userId, 'action' => ['copy', 'move']]
+        );
 
         return $bufferAction[0];
 

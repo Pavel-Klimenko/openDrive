@@ -14,7 +14,7 @@ $.contextMenu({
         download:  {name: 'Download'},
         copy:  {name: 'Copy'},
         paste:  {name: 'Paste'},
-        replace: {name: 'Replace'},
+        move: {name: 'Move'},
         rename:  {name: 'Rename'},
         props:  {name: 'Properties'}
     },
@@ -33,14 +33,17 @@ $.contextMenu({
 
 
         if (key === 'copy') {
-
-
-
             document.location.href = '/file-copy/' + formattedFilePath + '-' + fileName;
-
             console.log(formattedFilePath);
             console.log(fileName);
+            ///file-copy/{path}/"
+        }
 
+
+        if (key === 'move') {
+            document.location.href = '/file-copy/' + formattedFilePath + '-' + fileName;
+            console.log(formattedFilePath);
+            console.log(fileName);
             ///file-copy/{path}/"
         }
 
@@ -71,9 +74,6 @@ $.contextMenu({
             $('.modal-body').append(`<p><b>File location: </b>${fileLocation}</p>`);
             $('.modal-body').append(`<p><b>File size: </b>${fileSize}</p>`);
         }
-
-
-
 
 
     }
