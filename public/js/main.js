@@ -24,7 +24,6 @@ $.contextMenu({
         let fileName = $(this).data('file-name');
         let fileLocation = $(this).data('file-url');
         let fileSize = $(this).data('file-size');
-
         let formattedFilePath = $('#formattedCurrentPath').val();
 
 
@@ -32,6 +31,7 @@ $.contextMenu({
         console.log(key);
 
 
+        //TODO copy и move объединить
         if (key === 'copy') {
             document.location.href = '/file-copy/' + formattedFilePath + '-' + fileName;
             console.log(formattedFilePath);

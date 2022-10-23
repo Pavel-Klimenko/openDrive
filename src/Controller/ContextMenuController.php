@@ -8,41 +8,153 @@
 
 namespace App\Controller;
 
-
-use App\Entity\Basket;
 use App\Services;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 
-use Symfony\Bundle\FrameworkBundle\Controller;
-use App\GlobalFunctions\Helper;
-use Symfony\Component\Finder\Finder;
-use RecursiveDirectoryIterator;
-use FilesystemIterator;
-use RecursiveIteratorIterator;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\ResponseHeaderBag;
-
-
 
 class ContextMenuController extends AbstractController
 {
 
-    public $fileSystem;
+    private $fileSystem;
 
-
-    /** @var EntityManagerInterface */
     private $entityManager;
 
+    private $coreFileSystem;
+
+    private $exchangeBuffer;
 
 
-    public function __construct(Services\FileSystemService $fileSystem, EntityManagerInterface $entityManager)
+
+    public function __construct(
+        Services\FileSystemService $fileSystem,
+        Services\ExchangeBufferService $exchangeBuffer,
+        EntityManagerInterface $entityManager
+    )
     {
         $this->entityManager = $entityManager;
+
         $this->fileSystem = $fileSystem;
+
+        $this->coreFileSystem = new Filesystem();
+
+        $this->exchangeBuffer = $exchangeBuffer;
+    }
+
+
+    /**
+     * @Route("/file-copy/{path}/", name="fileCopy")
+     */
+    public function copyFile($path)
+    {
+        //TODO вынести в метод
+        if (str_contains($path, '-')) {
+            $arLink = explode('-', $path);
+            $fileName = end($arLink);
+            array_pop($arLink);
+
+            $currentPath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . implode('/', $arLink);
+        } else {
+            $currentPath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH .$path;
+        }
+
+        var_dump($currentPath);
+
+        //TODO добавить пользователя после создания регистрации, авторизации
+        $userId = 1;
+        $isMove = true;
+
+        //копировать или переместить?
+        $actionType = ($isMove) ? 'move' : 'copy';
+
+        /*       $bufferAction = $this->getBufferAction($userId, 'copy');
+                var_dump($bufferAction);*/
+
+        $this->exchangeBuffer->setBufferAction($userId, $actionType, $currentPath, $fileName);
+        //return $this->getFiles('/user_files');
+
+        return new Response(
+            'copy',
+            Response::HTTP_OK
+        );
+    }
+
+
+    /**
+     * @Route("/file-paste/{currentPath}", name="filePaste")
+     */
+    public function pasteFile($currentPath)
+    {
+
+        //TODO вынести в метод
+        if (str_contains($currentPath, '-')) {
+            $arLink = explode('-', $currentPath);
+            array_pop($arLink);
+            $targetPath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . implode('/', $arLink);
+        } else {
+            $targetPath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH .$currentPath;
+        }
+
+
+
+        $userId = 1;
+        $copiedFile = $this->exchangeBuffer->getBufferAction($userId);
+        $origin = $copiedFile->getFilePath() . '/' . $copiedFile->getFile();
+        $target = $targetPath . '/' . $copiedFile->getFile();
+
+
+        var_dump($copiedFile);
+
+
+        $action = $copiedFile->getAction();
+
+        var_dump($copiedFile->getAction());
+        var_dump($origin);
+        var_dump($target);
+
+
+        if ($action == 'move') {
+            $this->fileSystem->move($origin, $target);
+        } elseif($action == 'copy') {
+            $this->fileSystem->copy($origin, $target);
+        }
+
+
+        $this->exchangeBuffer->deleteBufferAction($userId, $action);
+
+
+
+        return new Response(
+            'paste',
+            Response::HTTP_OK
+        );
+
+    }
+
+
+    /**
+     * @Route("/file-rename", name="fileRename")
+     */
+    public function fileRename(Request $request)
+    {
+        $filePath = $request->request->get('FILE_PATH');
+        $oldName = $request->request->get('FILE_OLD_NAME');
+        $newName = $request->request->get('FILE_NEW_MAME');
+
+        $oldName = $filePath . $oldName;
+        $newName = $filePath . $newName;
+
+        $this->coreFileSystem->rename($oldName, $newName);
+        header('Location: ' . $_SERVER['HTTP_REFERER']);
+
+        return new Response(
+            'fileRename',
+            Response::HTTP_OK
+        );
     }
 
 
@@ -55,9 +167,9 @@ class ContextMenuController extends AbstractController
             . $this->fileSystem::STORAGE_PATH
             . $this->fileSystem::BASE_PATH
             . $linkToFile;
-
         return $this->file($linkToFile);
     }
+
 
     /**
      * @Route("/file-delete/{link}")
@@ -66,7 +178,6 @@ class ContextMenuController extends AbstractController
     {
         $link = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->fileSystem::BASE_PATH . $link;
         $this->fileSystem->addToBasket($link);
-
 
         return new Response(
             Response::HTTP_OK
@@ -85,48 +196,6 @@ class ContextMenuController extends AbstractController
             Response::HTTP_OK
         );
     }
-
-
-
-    /**
-     * @Route("/file-rename/")
-     */
-    public function rename()
-    {
-
-        $oldName = 'subDirectory1';
-        $newName = 'subDirectoryNEW';
-
-        $oldName = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->fileSystem::BASE_PATH . $oldName;
-        $newName = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->fileSystem::BASE_PATH . $newName;
-
-
-        var_dump($oldName);
-        var_dump($newName);
-
-        $this->fileSystem->rename($oldName, $newName);
-
-        return new Response(
-            Response::HTTP_OK
-        );
-    }
-
-
-
-    /**
-     * @Route("/file-move/{link}")
-     */
-    public function filemove($link)
-    {
-        $link = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->fileSystem::BASE_PATH . $link;
-        $this->fileSystem->addToBasket($link);
-
-
-        return new Response(
-            Response::HTTP_OK
-        );
-    }
-
 
 
 
@@ -150,10 +219,10 @@ class ContextMenuController extends AbstractController
 
 
         $response = [
-          'file-path' => $linkToFile,
-          'file-extension' =>$fileExtension,
-          'size' => $this->fileSystem->FileSizeConvert($fileProps['size']),
-          'last-modified' => date('d.m.Y h:i:s A', $fileProps['ctime']),
+            'file-path' => $linkToFile,
+            'file-extension' =>$fileExtension,
+            'size' => $this->fileSystem->FileSizeConvert($fileProps['size']),
+            'last-modified' => date('d.m.Y h:i:s A', $fileProps['ctime']),
         ];
 
 
@@ -164,7 +233,6 @@ class ContextMenuController extends AbstractController
             Response::HTTP_OK
         );
     }
-
 
 
 
