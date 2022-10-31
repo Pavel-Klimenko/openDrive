@@ -159,6 +159,34 @@ class ContextMenuController extends AbstractController
 
 
     /**
+     * @Route("/folder-delete/", name="folderDelete")
+     */
+    public function folderDelete(Request $request)
+    {
+        $folderPath = $request->get('folderPath');
+        $folderName = $request->get('folderName');
+        $link = $folderPath . '/' . $folderName;
+        $this->fileSystem->remove($link);
+        return new Response(Response::HTTP_OK);
+    }
+
+
+    /**
+     * @Route("/folder-create/", name="folderCreate")
+     */
+    public function folderCreate(Request $request)
+    {
+        $folderPath = $request->request->get('FOLDER_PATH');
+        $folderName = $request->request->get('FOLDER_NAME');
+        $link = $folderPath . '/' . $folderName;
+        $this->coreFileSystem->mkdir($link);
+        header('Location: ' . $_SERVER['HTTP_REFERER']);
+        return new Response(Response::HTTP_OK);
+
+    }
+
+
+    /**
      * @Route("/file-restore/", name="fileRestore")
      */
     public function restoreFromBasket(Request $request)

@@ -1,9 +1,16 @@
 $( document ).ready(function() {
 
-
     $("#newFile").change(function(){ // событие выбора файла
         $("#uploadFileForm").submit(); // отправка формы
     });
+
+
+    $( "#createFolder" ).click(function() {
+        let folderPath = $('#currentPath').val();
+        createFolder(folderPath);
+    });
+
+
 
 
     let arrHideGoBack = ['/get-files/user_files', '/basket/'];
@@ -13,6 +20,25 @@ $( document ).ready(function() {
         $('#goBackButton').show();
     }
 
+
+
+    //folder context menu
+    $.contextMenu({
+        selector: '.context-menu-folders',
+        items: {delete:  {name: 'Delete completely'}},
+        callback: function(menuAction, options) {
+            let folderPath = $(this).data('folder-path');
+            let folderName = $(this).data('folder-name');
+
+/*            console.log(folderPath);
+            console.log(folderName);
+            console.log(menuAction);*/
+
+            if (menuAction === 'delete') {
+                deleteFolder(folderPath, folderName)
+            }
+        }
+    });
 
 
     getExchangeBuffer(function (response) {
@@ -101,9 +127,16 @@ $( document ).ready(function() {
 
     });
 
-
 });
 
+
+//TODO AJAX вынести в отдельный метод
+
+function createFolder(folderPath) {
+    console.log(folderPath);
+    $('#popupCreateFolder').modal("show");
+    $('.inputs input[name=FOLDER_PATH]').val(folderPath);
+}
 
 function pasteFile(filePath) {
     var request = $.ajax({
@@ -162,6 +195,27 @@ function showFileProps(fileName, fileLocation, fileSize) {
     $('.modal-body').append(`<p><b>File size: </b>${fileSize}</p>`);
 }
 
+function deleteFolder(folderPath, folderName) {
+    var request = $.ajax({
+        url: "/folder-delete/",
+        type: "POST",
+        dataType: "json",
+        async: true,
+        data: {
+            folderPath: folderPath,
+            folderName: folderName,
+        }
+    });
+
+    request.done(function (msg) {
+        console.log(msg);
+        location.reload();
+    });
+
+    request.fail(function (jqXHR, textStatus) {
+        console.log("Request failed: " + textStatus);
+    });
+}
 
 function deleteFile(filePath, fileName, deleteCompletely) {
     var request = $.ajax({
@@ -205,7 +259,6 @@ function restoreFileFromBasket(fileName) {
     });
 }
 
-
 function downLoadFile(url) {
     var link_url = document.createElement("a");
     link_url.download = url.substring((url.lastIndexOf("/") + 1), url.length);
@@ -233,7 +286,6 @@ function getExchangeBuffer(handleData) {
         console.log("Request failed: " + textStatus);
     });
 }
-
 
 function in_array(needle, haystack) {
     var found = 0;

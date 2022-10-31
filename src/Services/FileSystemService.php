@@ -39,14 +39,14 @@ class FileSystemService {
     }
 
 
-    public function createFolder(string $folderPath) {
+/*    public function createFolder(string $folderPath) {
         try {
             $this->fileSystem->mkdir($_SERVER['DOCUMENT_ROOT'] . $folderPath);
 
         } catch (IOExceptionInterface $exception) {
             echo "An error occurred while creating your directory at ".$exception->getPath();
         }
-    }
+    }*/
 
 
 

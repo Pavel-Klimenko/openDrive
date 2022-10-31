@@ -1,0 +1,57 @@
+{# app/Resources/views/blog/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Start page{% endblock %}
+
+{% block body %}
+
+    <div class="card-deck">
+        <h1>Select disk tariff:</h1>
+    </div>
+
+    <div class="card-deck">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Basic</h5>
+                <p class="card-text">1$ per month</p>
+            </div>
+
+            <ul>
+                <li>100 GB storage space</li>
+                <li>Support from OpenDrive</li>
+            </ul>
+
+            <div class="card-footer" style="cursor: pointer" data-tariff="basic">
+                <small class="text-muted">Select tariff</small>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Standard</h5>
+                <p class="card-text">2.5$ per month</p>
+            </div>
+
+            <ul>
+                <li>200 GB storage space</li>
+                <li>Support from OpenDrive</li>
+            </ul>
+
+            <div class="card-footer" style="cursor: pointer" data-tariff="basic">
+                <small class="text-muted">Select tariff</small>
+            </div>
+        </div>
+
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">FREE</h5>
+                <p class="card-text">This is test tariff for demonstration OpenDrive functionality. You may select it and register new user. Your storage space will be created automatically after your registration</p>
+            </div>
+            <div class="card-footer" style="cursor: pointer" data-tariff="basic">
+                <small class="text-muted">Select tariff</small>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

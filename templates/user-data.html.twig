@@ -44,7 +44,10 @@
                     <h5>Folders:</h5>
                     <div class="row mt-3">
                         {% for foldername in response.folders %}
-                            <div class="col-12 col-lg-4 context-menu">
+                            <div class="col-12 col-lg-4 context-menu-folders"
+                                 data-folder-path="{{ response.canonical_current_path }}"
+                                 data-folder-name="{{ foldername }}"
+                            >
                                 <a href="{{ asset('/get-files/'~response.current_path~'-'~foldername~'') }}" style="text-decoration: none">
                                 <div class="card shadow-none border radius-15">
                                     <div class="card-body">
@@ -128,5 +131,6 @@
 
     {{ include('inc/popup_file_props.twig') }}
     {{ include('inc/popup_file_rename.twig') }}
+    {{ include('inc/popup_folder_create.twig') }}
 
 {% endblock %}

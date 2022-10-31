@@ -6,14 +6,21 @@
         <span class="btn btn-light"><a href="{{ path('app_register') }}">Registration</a></span>
     {% endif %}
     <br/> <br/>
+
+    {#Add new file#}
     <form method="POST" id="uploadFileForm" enctype="multipart/form-data" action="{{ path('fileUpload') }}">
         <label for="newFile">
-            <span class="btn btn-primary">+ Add File</span>
+            <span class="btn btn-success">+ Add File</span>
             <input type="file" id="newFile" name="new_file" style="display: none">
             <input type="hidden" name="current_path" value="{{ response.canonical_current_path }}">
         </label>
     </form>
     <br/>
+
+    <span class="btn btn-primary" id="createFolder">+ Create Folder</span>
+    <br/><br/>
+
+
 
     <a href="{{ path('getBasket') }}"><span class="btn btn-warning">Basket</span></a>
 </div>
