@@ -200,54 +200,36 @@ class FileSystemService {
 
     public function addToBasket($origin)
     {
+        $user_id = 1;
         $arrOrigin = explode('/', $origin);
         $itemName = end($arrOrigin);
-        $target = $_SERVER['DOCUMENT_ROOT'].'/storage/basket/' . $itemName;
-
+        $target = $_SERVER['DOCUMENT_ROOT'].'/storage/basket_user_'. $user_id . '/' . $itemName;
         $type = (is_dir($_SERVER['DOCUMENT_ROOT'] . $origin)) ? 'folder' : 'file';
-
-
         $this->move($origin, $target);
 
         $basket = new Basket();
         $basket->setType($type);
         $basket->setPath($origin);
         $basket->setItem($itemName);
+        $basket->setUserId($user_id);
 
         $this->entityManager->persist($basket);
         $this->entityManager->flush();
-
     }
 
 
     public function restoreFromBasket($itemName)
     {
+        $user_id = 1;
         $basketRepository = $this->entityManager->getRepository(Basket::class);
+        $basketItem = $basketRepository->findOneBy([
+            'item' => $itemName,
+            'user_id' => $user_id
+        ]);
 
-        $basketItem = $basketRepository->findOneBy(['item' => $itemName]);
-
-
-        var_dump($basketItem);
-
-
-        $origin = $_SERVER['DOCUMENT_ROOT'].'/storage/basket/' . $itemName;
+        $origin = $_SERVER['DOCUMENT_ROOT'] . '/storage/basket_user_'.$user_id . '/' . $itemName;
         $target = $basketItem->getPath();
-
-
-        /* $this->helper->prent($origin);
-        $this->helper->prent($target);*/
-
-
-        var_dump($origin);
-
-        var_dump($target);
-
-
-        //Restoring item to it`s previous location
         $this->move($origin, $target);
-
-
-        //Deleting item from basket table
         $this->entityManager->remove($basketItem);
         $this->entityManager->flush();
     }
@@ -255,19 +237,8 @@ class FileSystemService {
 
 
 
-/*    public function remove($linkToFile) {
-
+    public function remove($linkToFile) {
         $this->fileSystem->remove(array($linkToFile));
-    }*/
-
-
-/*    public function downloadFile($linkToFile) {
-        $linkToFile
-
-            return $this->file('/home/website/upload/'.$someFile)
-    }*/
-
-
-
+    }
 
 }

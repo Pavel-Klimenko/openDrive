@@ -6,9 +6,6 @@
 {% block body %}
     {{ include('inc/sidebar.twig') }}
 
-   {# <div class="context-menu-one">нажать на правую кнопку мыши</div>#}
-    {#<div id="res"></div>#}
-
 
     <div class="col-12 col-lg-9">
         <div class="card">
@@ -17,12 +14,21 @@
                 {# TODO поиск по имени файл в уже отфильтрованной выборке#}
 
                 <div class="fm-search">
-                    <div class="mb-0">
+
+
+                    <div class="mb-0" id="goBackButton">
+                        <div class="input-group input-group-lg">
+                            <span class="btn btn-dark" onclick="history.back();">&#10229; Go back</span>
+                        </div>
+                    </div>
+
+{#                    <div class="mb-0">
                         <div class="input-group input-group-lg"><span class="input-group-text bg-transparent"><i
                                         class="fa fa-search"></i></span>
                             <input type="text" class="form-control" placeholder="Search the files">
                         </div>
-                    </div>
+                    </div>#}
+
                 </div>
                 <br/>
 
@@ -71,7 +77,7 @@
                     <div>
                         <h5 class="mb-0">Files:</h5>
                     </div>
-                    <div class="ms-auto"><a href="{{ asset(response.current_path) }}" class="btn btn-sm btn-outline-secondary">View all</a>
+                    <div class="ms-auto"><a href="{{ asset('/get-files/'~response.current_path~'') }}" class="btn btn-sm btn-outline-secondary">View all</a>
                     </div>
                 </div>
 

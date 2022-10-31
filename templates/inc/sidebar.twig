@@ -1,64 +1,15 @@
 <div class="col-12 col-lg-3">
-        <div class="card">
-            <div class="card-body">
-
-                <div class="d-grid">
-                    <form method="POST" id="uploadFileForm" enctype="multipart/form-data" action="{{ path('fileUpload') }}">
-                        <label for="newFile">
-                            <span class="btn btn-primary">+ Add File</span>
-                            <input type="file" id="newFile" name="new_file" style="display: none">
-                            <input type="hidden" name="current_path" value="{{ response.current_path }}">
-                        </label>
-                    </form>
-
-
-                    <script type="text/javascript">
-                        $( document ).ready(function() {
-                            $("#newFile").change(function(){ // событие выбора файла
-                                $("#uploadFileForm").submit(); // отправка формы
-                            });
-                        });
-                    </script>
-
-
-
-
-
-
-                    {#<a href="javascript:;" class="btn btn-primary">+ Add File</a>#}
-
-
-
-                </div>
-                <h5 class="my-3">My Drive</h5>
-                <div class="fm-menu">
-
-                    {#возможно сделать на JS лучше#}
-                    {#{{ response.current_path }}#}
-                 {#   href="{{ asset('/get-data/'~response.current_path~'documents/') }}"#}
-
-
-
-
-
-                    <div class="list-group list-group-flush"> <a href="{{ asset(response.current_path) }}" class="list-group-item py-1"><i class="bx bx-folder me-2"></i><span>All Files</span></a>
-{#                        <a href="javascript:;" class="list-group-item py-1"><i class="bx bx-devices me-2"></i><span>My Devices</span></a>
-                        <a href="javascript:;" class="list-group-item py-1"><i class="bx bx-analyse me-2"></i><span>Recents</span></a>
-                        <a href="javascript:;" class="list-group-item py-1"><i class="bx bx-plug me-2"></i><span>Important</span></a>
-                        <a href="javascript:;" class="list-group-item py-1"><i class="bx bx-trash-alt me-2"></i><span>Deleted Files</span></a>
-                        #}
-                        <a href="{{ asset('/get-files/'~response.current_path~'/documents/') }}" class="list-group-item py-1"><i class="bx bx-file me-2"></i><span>Documents</span></a>
-                        <a href="{{ asset('/get-files/'~response.current_path~'/img/') }}" class="list-group-item py-1"><i class="bx bx-image me-2"></i><span>Images</span></a>
-                        <a href="{{ asset('/get-files/'~response.current_path~'/video/') }}" class="list-group-item py-1"><i class="bx bx-video me-2"></i><span>Videos</span></a>
-                        <a href="{{ asset('/get-files/'~response.current_path~'/audio/') }}" class="list-group-item py-1"><i class="bx bx-music me-2"></i><span>Audio</span></a>
-                        <a href="{{ asset('/get-files/'~response.current_path~'/archives/') }}" class="list-group-item py-1"><i class="bx bx-beer me-2"></i><span>Archives</span></a>
-                    </div>
-                </div>
-            </div>
+    <div class="card">
+        <div class="card-body">
+            {% if response.current_path != '/basket/' %}
+                {{ include('inc/sidebar_blocks/disk.twig') }}
+            {% else %}
+                {{ include('inc/sidebar_blocks/basket.twig') }}
+            {% endif %}
         </div>
+    </div>
 
     {{ render(controller(
         'App\\Controller\\EmbeddingController::getUserDiskInfo'
     )) }}
-
-    </div>
+</div>

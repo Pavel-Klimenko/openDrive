@@ -29,7 +29,7 @@ class ExchangeBufferService {
             ['user_id' => $userId, 'action' => ['copy', 'move']]
         );
 
-        return $bufferAction[0];
+        return ($bufferAction) ? $bufferAction[0] : false;
     }
 
 

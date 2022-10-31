@@ -14,18 +14,15 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Doctrine\ORM\EntityManagerInterface;
 
 
 class ContextMenuController extends AbstractController
 {
-
     private $fileSystem;
-
     private $entityManager;
-
     private $coreFileSystem;
-
     private $exchangeBuffer;
 
 
@@ -37,84 +34,50 @@ class ContextMenuController extends AbstractController
     )
     {
         $this->entityManager = $entityManager;
-
         $this->fileSystem = $fileSystem;
-
         $this->coreFileSystem = new Filesystem();
-
         $this->exchangeBuffer = $exchangeBuffer;
     }
 
 
     /**
-     * @Route("/file-copy/{path}/", name="fileCopy")
+     * @Route("/file-copy/", name="fileCopy")
      */
-    public function copyFile($path)
+    public function copyFile(Request $request)
     {
-        //TODO вынести в метод
-        if (str_contains($path, '-')) {
-            $arLink = explode('-', $path);
-            $fileName = end($arLink);
-            array_pop($arLink);
-
-            $currentPath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . implode('/', $arLink);
-        } else {
-            $currentPath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH .$path;
-        }
-
-        var_dump($currentPath);
-
         //TODO добавить пользователя после создания регистрации, авторизации
         $userId = 1;
-        $isMove = true;
+        $action = $request->get('action');
+        $filePath= $request->get('filePath');
+        $fileName = $request->get('fileName');
 
-        //копировать или переместить?
-        $actionType = ($isMove) ? 'move' : 'copy';
+        $this->exchangeBuffer->setBufferAction($userId, $action, $filePath, $fileName);
 
-        /*       $bufferAction = $this->getBufferAction($userId, 'copy');
-                var_dump($bufferAction);*/
+        $jsonData = [
+            'filePath' => $filePath,
+            'fileName' => $fileName,
+            'action' => $action
+        ];
 
-        $this->exchangeBuffer->setBufferAction($userId, $actionType, $currentPath, $fileName);
-        //return $this->getFiles('/user_files');
 
-        return new Response(
-            'copy',
-            Response::HTTP_OK
-        );
+        return new JsonResponse($jsonData);
     }
 
 
     /**
-     * @Route("/file-paste/{currentPath}", name="filePaste")
+     * @Route("/file-paste/", name="filePaste")
      */
-    public function pasteFile($currentPath)
+    public function pasteFile(Request $request)
     {
 
-        //TODO вынести в метод
-        if (str_contains($currentPath, '-')) {
-            $arLink = explode('-', $currentPath);
-            array_pop($arLink);
-            $targetPath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . implode('/', $arLink);
-        } else {
-            $targetPath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH .$currentPath;
-        }
-
+        //TODO copy, move в ту же папку баг
 
 
         $userId = 1;
         $copiedFile = $this->exchangeBuffer->getBufferAction($userId);
         $origin = $copiedFile->getFilePath() . '/' . $copiedFile->getFile();
-        $target = $targetPath . '/' . $copiedFile->getFile();
-
-
-        var_dump($copiedFile);
-
-
+        $target = $request->get('filePath') . '/' . $copiedFile->getFile();
         $action = $copiedFile->getAction();
-
-        var_dump($copiedFile->getAction());
-        var_dump($origin);
-        var_dump($target);
 
 
         if ($action == 'move') {
@@ -123,16 +86,16 @@ class ContextMenuController extends AbstractController
             $this->fileSystem->copy($origin, $target);
         }
 
-
         $this->exchangeBuffer->deleteBufferAction($userId, $action);
 
+        $jsonData = [
+            'origin' => $origin,
+            'target' => $target,
+            'action' => $action
+        ];
 
 
-        return new Response(
-            'paste',
-            Response::HTTP_OK
-        );
-
+        return new JsonResponse($jsonData);
     }
 
 
@@ -172,29 +135,37 @@ class ContextMenuController extends AbstractController
 
 
     /**
-     * @Route("/file-delete/{link}")
+     * @Route("/file-delete/", name="fileDelete")
      */
-    public function fileDelete($link)
+    public function fileDelete(Request $request)
     {
-        $link = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->fileSystem::BASE_PATH . $link;
-        $this->fileSystem->addToBasket($link);
+        $user_id = 1;
 
-        return new Response(
-            Response::HTTP_OK
-        );
+        $fileName = $request->get('fileName');
+
+        //adding to the basket or deleteting completely
+        if ($request->get('deleteCompletely') == 'Y') {
+            $link = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . 'basket_user_'.$user_id .'/'. $fileName;
+            $this->fileSystem->remove($link);
+        } else {
+            $filePath= $request->get('filePath');
+            $link = $filePath.'/'.$fileName;
+            $this->fileSystem->addToBasket($link);
+        }
+
+
+        return new Response(Response::HTTP_OK);
     }
 
 
     /**
-     * @Route("/file-restore/{itemName}")
+     * @Route("/file-restore/", name="fileRestore")
      */
-    public function restoreFromBasket($itemName)
+    public function restoreFromBasket(Request $request)
     {
-        $this->fileSystem->restoreFromBasket($itemName);
-
-        return new Response(
-            Response::HTTP_OK
-        );
+        $fileName = $request->get('fileName');
+        $this->fileSystem->restoreFromBasket($fileName);
+        return new Response(Response::HTTP_OK);
     }
 
 
@@ -232,6 +203,32 @@ class ContextMenuController extends AbstractController
             'showFolder',
             Response::HTTP_OK
         );
+    }
+
+
+    /**
+     * @Route("/get-exchange-buffer")
+     */
+    public function getExchangeBuffer(Request $request) {
+
+        $userId = 1;
+        $bufferRow = $this->exchangeBuffer->getBufferAction($userId);
+
+        if ($bufferRow) {
+            $jsonResponse = [
+                'status' => 'BUFFER',
+                'action' => $bufferRow->getAction(),
+                'file_path' => $bufferRow->getFilePath(),
+                'file' => $bufferRow->getFile()
+            ];
+        } else {
+            $jsonResponse = [
+                'status' => 'BUFFER_NONE',
+            ];
+        }
+
+
+        return new JsonResponse($jsonResponse);
     }
 
 

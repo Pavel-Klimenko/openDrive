@@ -1,0 +1,10 @@
+<div class="d-grid">
+    {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+        <span class="btn btn-light"><a href="{{ path('app_logout') }}">Exit</a></span>
+    {% else %}
+        <span class="btn btn-light"><a href="{{ path('app_login') }}">Login</a></span>
+        <span class="btn btn-light"><a href="{{ path('app_register') }}">Registration</a></span>
+    {% endif %}
+    <br /><br />
+    <a href="{{ asset('/get-files/user_files/') }}"><span class="btn btn-warning">Disk</span></a>
+</div>
