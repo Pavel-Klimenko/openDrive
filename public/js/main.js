@@ -11,6 +11,19 @@ $( document ).ready(function() {
     });
 
 
+    $(".choose-tariff").click(function() {
+        let tariff = $(this).data('tariff');
+
+        if (tariff == 'free') {
+            document.location.href = '/register?tariff=' + tariff;
+        } else {
+            alert('This tariff is unavailable now');
+        }
+
+
+    });
+
+
 
 
     let arrHideGoBack = ['/get-files/user_files', '/basket/'];

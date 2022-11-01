@@ -26,6 +26,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string')]
     private $password;
 
+    #[ORM\Column(type: 'string')]
+    private $tariff;
+
+
     public function getId(): ?int
     {
         return $this->id;
@@ -83,6 +87,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): self
     {
         $this->password = $password;
+
+        return $this;
+    }
+
+
+    public function getTariff(): string
+    {
+        return $this->tariff;
+    }
+
+    public function setTariff(string $tariff): self
+    {
+        $this->tariff = $tariff;
 
         return $this;
     }

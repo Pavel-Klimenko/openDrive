@@ -9,7 +9,10 @@
         </div>
     </div>
 
-    {{ render(controller(
-        'App\\Controller\\EmbeddingController::getUserDiskInfo'
-    )) }}
+    {% if response.empty_disk == false %}
+        {{ render(controller(
+            'App\\Controller\\EmbeddingController::getUserDiskInfo'
+        )) }}
+    {% endif %}
+
 </div>

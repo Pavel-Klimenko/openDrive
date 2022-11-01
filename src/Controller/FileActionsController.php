@@ -8,7 +8,6 @@
 
 namespace App\Controller;
 
-
 use App\Entity\Basket;
 use App\Entity\ExchangeBuffer;
 use App\Services;
@@ -18,6 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller;
+use Symfony\Component\Security\Core\Security;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
@@ -38,21 +38,23 @@ class FileActionsController extends AbstractController
     public $fileSystem;
     public $coreFileSystem;
 
-
-
     /** @var EntityManagerInterface */
     private $entityManager;
+
+    private $security;
 
 
 
     public function __construct(
         Services\FileSystemService $fileSystem,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        Security $security
     )
     {
         $this->entityManager = $entityManager;
         $this->fileSystem = $fileSystem;
         $this->coreFileSystem = new Filesystem();
+        $this->security = $security;
     }
 
 
@@ -77,6 +79,17 @@ class FileActionsController extends AbstractController
     public function getFiles($path, $fileType = false)
     {
 
+         $userId = $this->security->getUser()->getId();
+
+
+         var_dump($userId);
+
+
+
+        //      //getFiles($path, $fileType = false
+        //        //("/get-files/{path}/{fileType}", name="getFiles")
+        //
+
         if (str_contains($path, '-')) {
             $arLink = explode('-', $path);
             $storagePath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . implode('/', $arLink);
@@ -84,21 +97,35 @@ class FileActionsController extends AbstractController
             $storagePath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH .$path;
         }
 
-
-        $arrDirectories = $this->getStorageDirectories($storagePath);
-        $arrFiles = $this->getStorageFiles($storagePath, $fileType);
-
         $response = [
-            'folders' => $arrDirectories,
-            'files' => $arrFiles,
             'current_path' => $path,
             'canonical_current_path' => str_replace ( '//', '/', $storagePath)
         ];
 
 
-        return $this->render('user-data.html.twig', [
-            'response' => $response,
-        ]);
+
+        if (Helper::getDirectorySize($storagePath) !== 0) {
+            $arrDirectories = $this->getStorageDirectories($storagePath);
+            $arrFiles = $this->getStorageFiles($storagePath, $fileType);
+
+            $response['folders'] = $arrDirectories;
+            $response['files'] = $arrFiles;
+
+            return $this->render('user-data.html.twig', [
+                'response' => $response,
+            ]);
+
+        } else {
+
+            $response['empty_disk'] = true;
+            return $this->render('empty-disk.html.twig', [
+                'response' => $response,
+            ]);
+        }
+
+
+
+
 
     }
 

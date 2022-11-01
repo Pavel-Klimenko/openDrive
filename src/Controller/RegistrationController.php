@@ -13,6 +13,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\UserAuthenticatorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 class RegistrationController extends AbstractController
 {
@@ -32,8 +33,14 @@ class RegistrationController extends AbstractController
                 )
             );
 
+
+            $user->setTariff($request->get('tariff'));
             $entityManager->persist($user);
             $entityManager->flush();
+
+            $this->createUserSpace($user->getId());
+
+
             // do anything else you need here, like send an email
 
             return $userAuthenticator->authenticateUser(
@@ -47,4 +54,25 @@ class RegistrationController extends AbstractController
             'registrationForm' => $form->createView(),
         ]);
     }
+
+
+    private function createUserSpace($userId) {
+        $coreFileSystem = new Filesystem();
+
+        $userFolder = $_SERVER['DOCUMENT_ROOT'] . '/storage/user_' . $userId;
+        $userDisk = $userFolder . '/' . 'disk';
+        $userBasket = $userFolder . '/' . 'basket';
+
+
+        if(!is_dir($userFolder)) {
+            $coreFileSystem->mkdir($userFolder);
+
+            if(is_dir($userFolder)) {
+                $coreFileSystem->mkdir($userDisk);
+                $coreFileSystem->mkdir($userBasket);
+            }
+        }
+    }
+
+
 }
