@@ -16,7 +16,13 @@ use Doctrine\ORM\EntityManagerInterface;
 class Helper extends AbstractController {
 
     public static function getPercentOfTotal($part, $total, $precision = false) {
-        $percent = ($part / $total) * 100;
+
+        if ($total != 0) {
+            $percent = ($part / $total) * 100;
+        } else {
+            $percent = 0;
+        }
+
         if ($precision) $percent = round($percent, $precision);
         return $percent;
     }
@@ -31,7 +37,7 @@ class Helper extends AbstractController {
             if (file_exists($folderPath . '/' . $file)) {
                 $size += filesize($folderPath . '/' . $file);
                 if (is_dir($folderPath . '/' . $file)) {
-                    $size += $this->getDirectorySize($folderPath . '/' . $file);
+                    $size += self::getDirectorySize($folderPath . '/' . $file);
                 }
             }
 

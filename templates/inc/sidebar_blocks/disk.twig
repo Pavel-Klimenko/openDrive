@@ -26,22 +26,20 @@
     <a href="{{ path('getBasket') }}"><span class="btn btn-warning">Basket</span></a>
 </div>
 
-{% if response.empty_disk == false %}
-    <h5 class="my-3">My Drive</h5>
-    <div class="fm-menu">
-        <div class="list-group list-group-flush"><a href="{{ asset(response.current_path) }}"
-                                                    class="list-group-item py-1"><i class="bx bx-folder me-2"></i><span>All Files</span></a>
-            <a href="{{ asset('/get-files/'~response.current_path~'/documents/') }}" class="list-group-item py-1"><i
-                        class="bx bx-file me-2"></i><span>Documents</span></a>
-            <a href="{{ asset('/get-files/'~response.current_path~'/img/') }}" class="list-group-item py-1"><i
-                        class="bx bx-image me-2"></i><span>Images</span></a>
-            <a href="{{ asset('/get-files/'~response.current_path~'/video/') }}" class="list-group-item py-1"><i
-                        class="bx bx-video me-2"></i><span>Videos</span></a>
-            <a href="{{ asset('/get-files/'~response.current_path~'/audio/') }}" class="list-group-item py-1"><i
-                        class="bx bx-music me-2"></i><span>Audio</span></a>
-            <a href="{{ asset('/get-files/'~response.current_path~'/archives/') }}" class="list-group-item py-1"><i
-                        class="bx bx-beer me-2"></i><span>Archives</span></a>
-        </div>
+<h5 class="my-3">My Drive</h5>
+<div class="fm-menu">
+    <div class="list-group list-group-flush"><a href="{{ asset('/get-files/'~response.current_path~'') }}"
+                                                class="list-group-item py-1"><i class="bx bx-folder me-2"></i><span>All Files</span></a>
+        <a href="{{ asset('/get-files/'~response.current_path~'/documents/') }}" class="list-group-item py-1"><i
+                    class="bx bx-file me-2"></i><span>Documents</span></a>
+        <a href="{{ asset('/get-files/'~response.current_path~'/img/') }}" class="list-group-item py-1"><i
+                    class="bx bx-image me-2"></i><span>Images</span></a>
+        <a href="{{ asset('/get-files/'~response.current_path~'/video/') }}" class="list-group-item py-1"><i
+                    class="bx bx-video me-2"></i><span>Videos</span></a>
+        <a href="{{ asset('/get-files/'~response.current_path~'/audio/') }}" class="list-group-item py-1"><i
+                    class="bx bx-music me-2"></i><span>Audio</span></a>
+        <a href="{{ asset('/get-files/'~response.current_path~'/archives/') }}" class="list-group-item py-1"><i
+                    class="bx bx-beer me-2"></i><span>Archives</span></a>
     </div>
-{% endif %}
+</div>
 

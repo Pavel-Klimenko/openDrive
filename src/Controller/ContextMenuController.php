@@ -126,35 +126,9 @@ class ContextMenuController extends AbstractController
      */
     public function downloadFile($linkToFile)
     {
-        $linkToFile = $_SERVER['DOCUMENT_ROOT']
-            . $this->fileSystem::STORAGE_PATH
-            . $this->fileSystem::BASE_PATH
-            . $linkToFile;
+        $userBasePath = $this->fileSystem->getUserBasePath();
+        $linkToFile = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $userBasePath . $linkToFile;
         return $this->file($linkToFile);
-    }
-
-
-    /**
-     * @Route("/file-delete/", name="fileDelete")
-     */
-    public function fileDelete(Request $request)
-    {
-        $user_id = 1;
-
-        $fileName = $request->get('fileName');
-
-        //adding to the basket or deleteting completely
-        if ($request->get('deleteCompletely') == 'Y') {
-            $link = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . 'basket_user_'.$user_id .'/'. $fileName;
-            $this->fileSystem->remove($link);
-        } else {
-            $filePath= $request->get('filePath');
-            $link = $filePath.'/'.$fileName;
-            $this->fileSystem->addToBasket($link);
-        }
-
-
-        return new Response(Response::HTTP_OK);
     }
 
 
@@ -186,29 +160,14 @@ class ContextMenuController extends AbstractController
     }
 
 
-    /**
-     * @Route("/file-restore/", name="fileRestore")
-     */
-    public function restoreFromBasket(Request $request)
-    {
-        $fileName = $request->get('fileName');
-        $this->fileSystem->restoreFromBasket($fileName);
-        return new Response(Response::HTTP_OK);
-    }
-
-
 
     /**
      * @Route("/file-properties/{linkToFile}")
      */
     public function getFileProps($linkToFile)
     {
-        $linkToFile = $_SERVER['DOCUMENT_ROOT']
-            . $this->fileSystem::STORAGE_PATH
-            . $this->fileSystem::BASE_PATH
-            . $linkToFile;
-
-
+        $userBasePath = $this->fileSystem->getUserBasePath();
+        $linkToFile = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $userBasePath . $linkToFile;
         $fileProps = stat($linkToFile);
 
         $arLink = explode('/', $linkToFile);
@@ -258,9 +217,6 @@ class ContextMenuController extends AbstractController
 
         return new JsonResponse($jsonResponse);
     }
-
-
-
 
 
 }

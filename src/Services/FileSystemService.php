@@ -15,11 +15,13 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Path;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Security\Core\Security;
 
 
 class FileSystemService {
 
     public $fileSystem;
+    private $security;
 
     public CONST FILE_EXTENSIONS = [
         'img' => ['jpg', 'png', 'jpeg', 'webp'],
@@ -30,23 +32,43 @@ class FileSystemService {
     ];
 
 
-    public CONST BASE_PATH = 'user_files/';
+    //public CONST BASE_PATH = 'user_5/disk/';
+
     public CONST STORAGE_PATH = '/storage/';
 
-    public function __construct(EntityManagerInterface $entityManager) {
+
+    public function __construct(EntityManagerInterface $entityManager, Security $security) {
         $this->fileSystem = new Filesystem();
         $this->entityManager = $entityManager;
+        $this->security = $security;
     }
 
 
-/*    public function createFolder(string $folderPath) {
-        try {
-            $this->fileSystem->mkdir($_SERVER['DOCUMENT_ROOT'] . $folderPath);
+    public function getUserBasePath() {
+        $userId = $this->security->getUser()->getId();
+        return "user_".$userId."/disk/";
+    }
 
-        } catch (IOExceptionInterface $exception) {
-            echo "An error occurred while creating your directory at ".$exception->getPath();
-        }
-    }*/
+
+    public function getUserBasketPath() {
+        $userId = $this->security->getUser()->getId();
+        return "user_".$userId."/basket/";
+    }
+
+    public function getUserId() {
+        return $this->security->getUser()->getId();
+    }
+
+
+
+    /*    public function createFolder(string $folderPath) {
+            try {
+                $this->fileSystem->mkdir($_SERVER['DOCUMENT_ROOT'] . $folderPath);
+
+            } catch (IOExceptionInterface $exception) {
+                echo "An error occurred while creating your directory at ".$exception->getPath();
+            }
+        }*/
 
 
 
@@ -83,8 +105,6 @@ class FileSystemService {
      */
     public function FileSizeConvert($bytes)
     {
-
-
         if ($bytes == 0) return 0;
 
 
@@ -195,46 +215,6 @@ class FileSystemService {
             'ICON_CLASS' => $iconClass
         ];
     }
-
-
-
-    public function addToBasket($origin)
-    {
-        $user_id = 1;
-        $arrOrigin = explode('/', $origin);
-        $itemName = end($arrOrigin);
-        $target = $_SERVER['DOCUMENT_ROOT'].'/storage/basket_user_'. $user_id . '/' . $itemName;
-        $type = (is_dir($_SERVER['DOCUMENT_ROOT'] . $origin)) ? 'folder' : 'file';
-        $this->move($origin, $target);
-
-        $basket = new Basket();
-        $basket->setType($type);
-        $basket->setPath($origin);
-        $basket->setItem($itemName);
-        $basket->setUserId($user_id);
-
-        $this->entityManager->persist($basket);
-        $this->entityManager->flush();
-    }
-
-
-    public function restoreFromBasket($itemName)
-    {
-        $user_id = 1;
-        $basketRepository = $this->entityManager->getRepository(Basket::class);
-        $basketItem = $basketRepository->findOneBy([
-            'item' => $itemName,
-            'user_id' => $user_id
-        ]);
-
-        $origin = $_SERVER['DOCUMENT_ROOT'] . '/storage/basket_user_'.$user_id . '/' . $itemName;
-        $target = $basketItem->getPath();
-        $this->move($origin, $target);
-        $this->entityManager->remove($basketItem);
-        $this->entityManager->flush();
-    }
-
-
 
 
     public function remove($linkToFile) {

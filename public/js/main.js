@@ -23,15 +23,16 @@ $( document ).ready(function() {
 
     });
 
+    //TODO вынести контекст меню в отдельный файл
 
+    //TODO придумать нормальную хлебную крошку
 
-
-    let arrHideGoBack = ['/get-files/user_files', '/basket/'];
+/*    let arrHideGoBack = ['/get-files/user_files', '/basket/'];
     if (in_array(window.location.pathname, arrHideGoBack) !== -1) {
         $('#goBackButton').hide();
     } else {
         $('#goBackButton').show();
-    }
+    }*/
 
 
 
@@ -138,6 +139,20 @@ $( document ).ready(function() {
 
         });
 
+
+        //empty folder
+        if (response.status == 'BUFFER') {
+            $.contextMenu({
+                selector: '.context-menu-empty-folder',
+                items: {paste:  {name: 'Paste'}},
+                callback: function(menuAction, options) {
+                    let filePath = $('#currentPath').val();
+                    if (menuAction === 'paste') {
+                        pasteFile(filePath);
+                    }
+                }
+            });
+        }
     });
 
 });

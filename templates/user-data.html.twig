@@ -11,23 +11,15 @@
         <div class="card">
             <div class="card-body">
 
-                {# TODO поиск по имени файл в уже отфильтрованной выборке#}
-
                 <div class="fm-search">
-
-
-                    <div class="mb-0" id="goBackButton">
+{#                    <div class="mb-0" id="goBackButton">
                         <div class="input-group input-group-lg">
                             <span class="btn btn-dark" onclick="history.back();">&#10229; Go back</span>
                         </div>
-                    </div>
-
-{#                    <div class="mb-0">
-                        <div class="input-group input-group-lg"><span class="input-group-text bg-transparent"><i
-                                        class="fa fa-search"></i></span>
-                            <input type="text" class="form-control" placeholder="Search the files">
-                        </div>
                     </div>#}
+
+
+
 
                 </div>
                 <br/>
@@ -121,7 +113,7 @@
                         </table>
                     </div>
                 {% else %}
-                    <div class="table-responsive mt-3 text-danger">Files not found</div>
+                    <div class="table-responsive mt-3 text-danger context-menu-empty-folder">Files not found</div>
                 {% endif %}
             </div>
         </div>

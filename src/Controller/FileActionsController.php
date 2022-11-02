@@ -34,7 +34,6 @@ use RecursiveIteratorIterator;
 
 class FileActionsController extends AbstractController
 {
-
     public $fileSystem;
     public $coreFileSystem;
 
@@ -42,8 +41,6 @@ class FileActionsController extends AbstractController
     private $entityManager;
 
     private $security;
-
-
 
     public function __construct(
         Services\FileSystemService $fileSystem,
@@ -58,15 +55,20 @@ class FileActionsController extends AbstractController
     }
 
 
-
-
     /*TODO прописать нормальные роуты*/
     /**
      * @Route("/", name="showStartPage")
      */
     public function renderMainPage()
     {
-        return $this->render('start.html.twig', []);
+        if ($this->security->isGranted('IS_AUTHENTICATED_FULLY')) {
+
+            $userId = $this->security->getUser()->getId();
+
+            return $this->redirect("/get-files/user_$userId-disk");
+        } else {
+            return $this->render('start.html.twig', []);
+        }
     }
 
 
@@ -79,16 +81,11 @@ class FileActionsController extends AbstractController
     public function getFiles($path, $fileType = false)
     {
 
-         $userId = $this->security->getUser()->getId();
+        if (!$this->security->isGranted('IS_AUTHENTICATED_FULLY')) {
+            return $this->redirectToRoute('showStartPage');
+        }
 
 
-         var_dump($userId);
-
-
-
-        //      //getFiles($path, $fileType = false
-        //        //("/get-files/{path}/{fileType}", name="getFiles")
-        //
 
         if (str_contains($path, '-')) {
             $arLink = explode('-', $path);
@@ -97,17 +94,32 @@ class FileActionsController extends AbstractController
             $storagePath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH .$path;
         }
 
+
+        var_dump($storagePath);
+
         $response = [
             'current_path' => $path,
             'canonical_current_path' => str_replace ( '//', '/', $storagePath)
         ];
 
 
+        $arrDirectories = $this->getStorageDirectories($storagePath);
+        $arrFiles = $this->getStorageFiles($storagePath, $fileType);
 
-        if (Helper::getDirectorySize($storagePath) !== 0) {
+        //$response['empty_disk'] = false;
+        $response['folders'] = $arrDirectories;
+        $response['files'] = $arrFiles;
+
+        return $this->render('user-data.html.twig', [
+            'response' => $response,
+        ]);
+
+
+/*        if (Helper::getDirectorySize($storagePath) !== 0) {
             $arrDirectories = $this->getStorageDirectories($storagePath);
             $arrFiles = $this->getStorageFiles($storagePath, $fileType);
 
+            $response['empty_disk'] = false;
             $response['folders'] = $arrDirectories;
             $response['files'] = $arrFiles;
 
@@ -116,78 +128,16 @@ class FileActionsController extends AbstractController
             ]);
 
         } else {
-
             $response['empty_disk'] = true;
             return $this->render('empty-disk.html.twig', [
                 'response' => $response,
             ]);
-        }
+        }*/
 
 
 
 
 
-    }
-
-
-    /**
-     * @Route("/basket/", name="getBasket")
-     */
-    public function getBasket()
-    {
-        $userId = 1;
-        $basket = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . 'basket_user_' . $userId;
-
-
-        $arrDirectories = $this->getStorageDirectories($basket);
-        $arrFiles = $this->getStorageFiles($basket);
-
-        $response = [
-            'folders' => $arrDirectories,
-            'files' => $arrFiles,
-            'current_path' => '/basket/',
-            'canonical_current_path' => str_replace ( '//', '/', $basket)
-
-        ];
-
-        return $this->render('basket.html.twig', [
-            'response' => $response,
-        ]);
-    }
-
-
-    /**
-     * @Route("/clean-basket/")
-     */
-    public function cleanBasket()
-    {
-
-        $basketPath = $_SERVER['DOCUMENT_ROOT'] . '/storage/basket/';
-        $basket = scandir($basketPath);
-        unset($basket[0], $basket[1]);
-
-
-        if (count($basket) > 0) {
-            //var_dump('НЕ ПУСТАЯ');
-            $directoryIterator = new RecursiveDirectoryIterator($basketPath, FilesystemIterator::SKIP_DOTS);
-            $recursiveIterator = new RecursiveIteratorIterator($directoryIterator, RecursiveIteratorIterator::CHILD_FIRST);
-
-            foreach ($recursiveIterator as $file) {
-                $file->isDir() ? rmdir($file) : unlink($file);
-            }
-        } else {
-            //var_dump('ПУСТАЯ');
-            return new Response(
-                'Basket is empty',
-                Response::HTTP_OK
-            );
-        }
-
-
-        return new Response(
-            'cleanBasket',
-            Response::HTTP_OK
-        );
     }
 
 
@@ -209,7 +159,7 @@ class FileActionsController extends AbstractController
     }
 
 
-    private function getStorageFiles(string $storagePath, $type = false) {
+    public function getStorageFiles(string $storagePath, $type = false) {
         $arrFileExtensions = $this->fileSystem->getFileTypeExtensions($type);
 
         $finder = new Finder();
@@ -256,7 +206,7 @@ class FileActionsController extends AbstractController
     }
 
 
-    private function getStorageDirectories(string $storagePath)
+    public function getStorageDirectories(string $storagePath)
     {
         $finder = new Finder();
         $finder->directories()->in($storagePath);

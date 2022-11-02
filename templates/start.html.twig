@@ -5,12 +5,13 @@
 
 {% block body %}
 
-    <div class="card-deck">
-        <h1>Select disk tariff:</h1>
-    </div>
+
+    <h1>Select disk tariff:</h1><br />
+
+    <h5>If you have an account you may <a href="{{ path('app_login') }}">Login.</a> If you haven`t an account you
+        need to choose tariff and register account</h5>
 
     <div class="card-deck">
-
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Basic</h5>
@@ -52,7 +53,9 @@
                 <small class="text-muted">Select tariff</small>
             </div>
         </div>
+    </div><br />
 
-    </div>
+
+
 
 {% endblock %}

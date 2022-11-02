@@ -34,10 +34,8 @@ class EmbeddingController extends AbstractController
 
     public function getUserDiskInfo()
     {
-        //TODO передавать ID диска конкретного пользователя
-
-
-            $storagePath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->fileSystem::BASE_PATH;
+            $userBasePath = $this->fileSystem->getUserBasePath();
+            $storagePath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $userBasePath;
 
 
             $directory = new RecursiveDirectoryIterator($storagePath);
@@ -119,6 +117,7 @@ class EmbeddingController extends AbstractController
             $result['SIZE_OF_IMAGES']['IN_BYTES'] = $spaceUsedByImages;
             $result['SIZE_OF_IMAGES']['FOR_DISPLAY'] = $this->fileSystem->FileSizeConvert($spaceUsedByImages);
             $result['SIZE_OF_IMAGES']['FILES_QUANTITY'] = $imagesQuantity;
+
             $result['SIZE_OF_IMAGES']['PERCENTAGE_OF_TOTAL'] = Helper::getPercentOfTotal($spaceUsedByImages, $totalUsedSize);
 
             $result['SIZE_OF_MEDIA']['IN_BYTES'] = $spaceUsedByMedia;
