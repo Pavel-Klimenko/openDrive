@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Register{% endblock %}
+{% block title %}OpenDrive - register{% endblock %}
 
 {% block body %}
     <div class="col-12 col-lg-9">
@@ -14,11 +14,6 @@
                 }) }}
                 {{ form_row(registrationForm.agreeTerms) }}
                 <button type="submit" class="btn btn-primary">Register</button>
-
-                <a href="{{ asset('/get-files/user_files/') }}">
-                    <span class="btn btn-dark">Return to Disk</span>
-                </a>
-
                 {{ form_end(registrationForm) }}
             </div>
         </div>

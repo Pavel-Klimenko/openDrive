@@ -16,9 +16,6 @@ class Basket
     #[ORM\Column(type: 'integer', nullable: true)]
     private $user_id;
 
-    #[ORM\Column(type: 'string', length: 20, nullable: true)]
-    private $type;
-
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $path;
 
@@ -41,19 +38,6 @@ class Basket
     public function setUserId(?int $user_id): self
     {
         $this->user_id = $user_id;
-
-        return $this;
-    }
-
-
-    public function getType(): ?string
-    {
-        return $this->type;
-    }
-
-    public function setType(?string $type): self
-    {
-        $this->type = $type;
 
         return $this;
     }

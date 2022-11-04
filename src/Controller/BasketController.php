@@ -19,6 +19,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Basket;
 use App\Controller\FileActionsController;
 
+use RecursiveDirectoryIterator;
+use FilesystemIterator;
+use RecursiveIteratorIterator;
+
 
 class BasketController extends AbstractController
 {
@@ -27,6 +31,11 @@ class BasketController extends AbstractController
     private $coreFileSystem;
     private $exchangeBuffer;
     private $fileActionsController;
+
+
+    private $userBasePath;
+    private $userId;
+    private $userBasketPath;
 
     public function __construct(
         Services\FileSystemService $fileSystem,
@@ -40,6 +49,11 @@ class BasketController extends AbstractController
         $this->coreFileSystem = new Filesystem();
         $this->exchangeBuffer = $exchangeBuffer;
         $this->fileActionsController = $fileActionsController;
+
+
+        $this->userBasePath = $this->fileSystem->getUserBasePath();
+        $this->userId = $this->fileSystem->getUserId();
+        $this->userBasketPath = $this->fileSystem->getUserBasketPath();
     }
 
 
@@ -49,12 +63,11 @@ class BasketController extends AbstractController
     public function fileDelete(Request $request)
     {
 
-        $userBasePath = $this->fileSystem->getUserBasePath();
         $fileName = $request->get('fileName');
 
         //adding to the basket or deleteting completely
         if ($request->get('deleteCompletely') == 'Y') {
-            $link = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $userBasePath . $fileName;
+            $link = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->userBasePath . $fileName;
             $this->fileSystem->remove($link);
         } else {
             $filePath= $request->get('filePath');
@@ -83,9 +96,8 @@ class BasketController extends AbstractController
      */
     public function getBasket()
     {
-        $userId = $this->fileSystem->getUserId();
-        $userBasketPath = $this->fileSystem->getUserBasketPath();
-        $basket = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $userBasketPath;
+
+        $basket = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->userBasketPath;
 
 
         //var_dump($basket);
@@ -98,7 +110,7 @@ class BasketController extends AbstractController
             'files' => $arrFiles,
             'current_path' => '/basket/',
             'canonical_current_path' => str_replace ( '//', '/', $basket),
-            'user_id' => $userId
+            'user_id' => $this->userId
 
         ];
 
@@ -111,81 +123,86 @@ class BasketController extends AbstractController
 
 
     /**
-     * @Route("/clean-basket/")
+     * @Route("/clean-basket/", name="cleanBasket")
      */
     public function cleanBasket()
     {
+        $basketPath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->userBasketPath;
 
-        $basketPath = $_SERVER['DOCUMENT_ROOT'] . '/storage/basket/';
         $basket = scandir($basketPath);
         unset($basket[0], $basket[1]);
 
-
         if (count($basket) > 0) {
-            //var_dump('НЕ ПУСТАЯ');
             $directoryIterator = new RecursiveDirectoryIterator($basketPath, FilesystemIterator::SKIP_DOTS);
             $recursiveIterator = new RecursiveIteratorIterator($directoryIterator, RecursiveIteratorIterator::CHILD_FIRST);
 
             foreach ($recursiveIterator as $file) {
                 $file->isDir() ? rmdir($file) : unlink($file);
             }
-        } else {
-            //var_dump('ПУСТАЯ');
-            return new Response(
-                'Basket is empty',
-                Response::HTTP_OK
-            );
         }
 
+        $this->deleteAllUserBasketRows($this->userId);
 
-        return new Response(
-            'cleanBasket',
-            Response::HTTP_OK
-        );
+        return $this->redirectToRoute('getBasket');
+
     }
 
+
+    private function deleteAllUserBasketRows($userId) {
+        $basketRepository = $this->entityManager->getRepository(Basket::class);
+        $basketItems = $basketRepository->findBy(['user_id' => $userId]);
+        if ($basketItems) {
+            foreach ($basketItems as $item) {
+                $this->entityManager->remove($item);
+            }
+
+            $this->entityManager->flush();
+        }
+    }
 
     private function addFileToBasket($origin)
     {
-        $userBasketPath = $this->fileSystem->getUserBasketPath();
-
         $arrOrigin = explode('/', $origin);
         $fileName = end($arrOrigin);
 
-        $target = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $userBasketPath . $fileName;
-        $type = (is_dir($_SERVER['DOCUMENT_ROOT'] . $origin)) ? 'folder' : 'file';
-        $user_id = $this->fileSystem->getUserId();
+        $target = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->userBasketPath . $fileName;
         $this->fileSystem->move($origin, $target);
 
-        $basket = new Basket();
-        $basket->setType($type);
-        $basket->setPath($origin);
-        $basket->setItem($fileName);
-        $basket->setUserId($user_id);
+        $basketItem = $this->getBasketItemByName($fileName);
 
-        $this->entityManager->persist($basket);
-        $this->entityManager->flush();
+
+        if (!$basketItem) {
+            $basket = new Basket();
+            $basket->setPath($origin);
+            $basket->setItem($fileName);
+            $basket->setUserId($this->userId);
+
+            $this->entityManager->persist($basket);
+            $this->entityManager->flush();
+        }
+
     }
-
 
     private function restoreFile($fileName)
     {
+        $basketItem = $this->getBasketItemByName($fileName);
 
-        $userBasketPath = $this->fileSystem->getUserBasketPath();
-        $user_id = $this->fileSystem->getUserId();
-
-        $basketRepository = $this->entityManager->getRepository(Basket::class);
-        $basketItem = $basketRepository->findOneBy([
-            'item' => $fileName,
-            'user_id' => $user_id
-        ]);
-
-
-        $origin = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $userBasketPath . $fileName;
+        $origin = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->userBasketPath . $fileName;
         $target = $basketItem->getPath();
         $this->fileSystem->move($origin, $target);
         $this->entityManager->remove($basketItem);
         $this->entityManager->flush();
+    }
+
+    private function getBasketItemByName($fileName)
+    {
+        $basketRepository = $this->entityManager->getRepository(Basket::class);
+        $basketItem = $basketRepository->findOneBy([
+            'item' => $fileName,
+            'user_id' => $this->userId
+        ]);
+
+        return $basketItem;
     }
 
 }

@@ -42,6 +42,8 @@ class FileActionsController extends AbstractController
 
     private $security;
 
+    private $userId;
+
     public function __construct(
         Services\FileSystemService $fileSystem,
         EntityManagerInterface $entityManager,
@@ -52,6 +54,8 @@ class FileActionsController extends AbstractController
         $this->fileSystem = $fileSystem;
         $this->coreFileSystem = new Filesystem();
         $this->security = $security;
+
+        $this->userId = $this->fileSystem->getUserId();
     }
 
 
@@ -86,7 +90,6 @@ class FileActionsController extends AbstractController
         }
 
 
-
         if (str_contains($path, '-')) {
             $arLink = explode('-', $path);
             $storagePath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . implode('/', $arLink);
@@ -95,7 +98,10 @@ class FileActionsController extends AbstractController
         }
 
 
-        var_dump($storagePath);
+        //сборка хлебной крошки
+
+/*        $arBreadcrumbs = $this->makeBreadcrumbs($storagePath);
+        var_dump($arBreadcrumbs);*/
 
         $response = [
             'current_path' => $path,
@@ -109,34 +115,11 @@ class FileActionsController extends AbstractController
         //$response['empty_disk'] = false;
         $response['folders'] = $arrDirectories;
         $response['files'] = $arrFiles;
+        $response['breadcrumbs'] = $this->makeBreadcrumbs($storagePath);
 
         return $this->render('user-data.html.twig', [
             'response' => $response,
         ]);
-
-
-/*        if (Helper::getDirectorySize($storagePath) !== 0) {
-            $arrDirectories = $this->getStorageDirectories($storagePath);
-            $arrFiles = $this->getStorageFiles($storagePath, $fileType);
-
-            $response['empty_disk'] = false;
-            $response['folders'] = $arrDirectories;
-            $response['files'] = $arrFiles;
-
-            return $this->render('user-data.html.twig', [
-                'response' => $response,
-            ]);
-
-        } else {
-            $response['empty_disk'] = true;
-            return $this->render('empty-disk.html.twig', [
-                'response' => $response,
-            ]);
-        }*/
-
-
-
-
 
     }
 
@@ -169,7 +152,13 @@ class FileActionsController extends AbstractController
         if ($finder->hasResults()) {
             $counter = 0;
             foreach ($finder as $file) {
-                $fileName = $file->getRelativePathname();
+
+
+                //var_dump($file);
+
+                //$fileName = $file->getRelativePathname();
+                $fileName = $file->getFileName();
+
                 $fileUrl = stristr($file->getPathName(), '/storage/');
                 $fileSize = $this->fileSystem->FileSizeConvert($file->getSize());
 
@@ -214,7 +203,8 @@ class FileActionsController extends AbstractController
 
         if ($finder->hasResults()) {
             foreach ($finder as $directory) {
-                if ($directoryName = $directory->getRelativePathname()) {
+                $directoryName = $directory->getRelativePathname();
+                if ($directoryName && !strpos($directoryName, '/')) {
                     $arrResult[] = $directoryName;
                 }
             }
@@ -235,6 +225,46 @@ class FileActionsController extends AbstractController
         $newFileObject->move($currentPath, $newFileName);
         header("Location: ".$_SERVER['HTTP_REFERER']);
         return new Response('fileUpload', Response::HTTP_OK);
+    }
+
+
+
+    private function makeBreadcrumbs($storagePath) {
+        $arLink = explode('/', $storagePath);
+
+        $arrLinkForExclude = [
+            '',  'var', 'www', 'openDrive',
+            'public', 'storage', 'user_'.$this->userId, 'disk'
+        ];
+
+
+        $userDiskRoot = "/get-files/user_$this->userId-disk";
+
+        $arBreadcrumbs = [];
+        $breadcrumbElement = '';
+
+        foreach ($arLink as $link) {
+            if (in_array($link, $arrLinkForExclude)) continue;
+            $breadcrumbElement .= '-'.$link;
+            $breadcrumbElement = trim($breadcrumbElement, '-');
+            $arBreadcrumbs[] = $userDiskRoot .'-'. $breadcrumbElement;
+        }
+
+/*        if (count($arBreadcrumbs) > 1) {
+            array_pop($arBreadcrumbs);
+        }*/
+
+
+        //var_dump($arBreadcrumbs);
+        //var_dump(count($arBreadcrumbs));
+
+
+/*       if (count($arBreadcrumbs) > 0) {
+            array_unshift($arBreadcrumbs , $userDiskRoot);
+        }*/
+
+
+        return $arBreadcrumbs;
     }
 
 }

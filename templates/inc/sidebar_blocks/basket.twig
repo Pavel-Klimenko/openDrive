@@ -6,5 +6,6 @@
         <span class="btn btn-light"><a href="{{ path('app_register') }}">Registration</a></span>
     {% endif %}
     <br /><br />
+    <a href="{{ path('cleanBasket') }}"><span class="btn btn-danger">Clean basket</span></a>
     <a href="{{ asset('/get-files/user_'~response.user_id~'-disk') }}"><span class="btn btn-warning">Disk</span></a>
 </div>

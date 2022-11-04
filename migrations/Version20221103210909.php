@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20221030204025 extends AbstractMigration
+final class Version20221103210909 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -20,12 +20,12 @@ final class Version20221030204025 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE basket ADD user_id INT DEFAULT NULL');
+        $this->addSql('ALTER TABLE basket DROP type');
     }
 
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE basket DROP user_id');
+        $this->addSql('ALTER TABLE basket ADD type VARCHAR(20) DEFAULT NULL');
     }
 }
