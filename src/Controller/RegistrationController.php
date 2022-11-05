@@ -56,6 +56,14 @@ class RegistrationController extends AbstractController
     }
 
 
+    /**
+     * @Route("/opendrive-terms/", name="openDriveTerms")
+     */
+    public function getOpenDriveTerms() {
+        return $this->render('registration/terms.html.twig', []);
+    }
+
+
     private function createUserSpace($userId) {
         $coreFileSystem = new Filesystem();
 

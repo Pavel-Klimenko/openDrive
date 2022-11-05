@@ -1,0 +1,38 @@
+{# app/Resources/views/blog/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}OpenDrive - terms{% endblock %}
+
+{% block body %}
+    <div class="col-12 col-lg-9">
+        <div class="card">
+            <div class="card-body">
+                <h1>OpenDrive terms:</h1>
+                <p>
+                    Open Drive Terms of Service
+                    If you use Open Drive, that means you agree to the Terms of Service.
+                    If you’re using an account through work, school, or another group, terms may apply based on your organization’s agreement with Open.
+                    How do the Terms of Service affect me?
+                    As our Terms of Service state, "You retain ownership of any intellectual property rights that you hold in that content. In short, what belongs to you stays yours."
+
+                </p>
+                <p>
+                    We do not claim ownership in any of your content,
+                    including any text, data, information, and files that you upload,
+                    share, or store in your Drive account. What our Terms of Service
+                    do is enable us to give you the services you want — so if you decide
+                    to share a document with someone, or want to open it on a different device,
+                    we can provide that functionality.
+                </p>
+                <p>
+                    You control who can access your files in Drive. We will not share your files and data with others except as described in our Privacy Policy.
+                    We will not change a Private document into a Public one.
+                    We will not use a Private document for marketing or promotional campaigns.
+                    We will keep your data only as long as you ask us to keep it.
+                    You can take your data with you if you choose to stop using Google Drive.
+                </p>
+                <a class="btn btn-dark" href="{{ path('app_register') }}">Registration</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

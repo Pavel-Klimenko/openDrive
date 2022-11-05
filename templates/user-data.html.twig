@@ -12,30 +12,21 @@
             <div class="card-body">
 
                 <div class="fm-search">
+                    {#breadcrumbs#}
 
-                    {% for breadcrumb in response.breadcrumbs %}
-                        <p><a href="{{ breadcrumb }}">{{ breadcrumb }}</a></p>
+                    {% for folderLink, folderName in response.breadcrumbs %}
+                        {% if loop.index != response.breadcrumbs_cnt %}
+                            <a href="{{ folderLink }}">{{ folderName }}</a> -
+                        {% else %}
+                            <span>{{ folderName }}</span>
+                        {% endif %}
                     {% endfor %}
-
-
-
-
-{#                    <div class="mb-0" id="goBackButton">
-                        <div class="input-group input-group-lg">
-                            <span class="btn btn-dark" onclick="history.back();">&#10229; Go back</span>
-                        </div>
-                    </div>#}
-
-
-
-
                 </div>
                 <br/>
 
 
                 <input type="hidden" id="currentPath" value="{{ response.canonical_current_path }}">
                 <input type="hidden" id="formattedCurrentPath" value="{{ response.current_path }}">
-
 
 
                 {% if response.folders %}

@@ -84,7 +84,6 @@ class FileActionsController extends AbstractController
      */
     public function getFiles($path, $fileType = false)
     {
-
         if (!$this->security->isGranted('IS_AUTHENTICATED_FULLY')) {
             return $this->redirectToRoute('showStartPage');
         }
@@ -98,11 +97,6 @@ class FileActionsController extends AbstractController
         }
 
 
-        //сборка хлебной крошки
-
-/*        $arBreadcrumbs = $this->makeBreadcrumbs($storagePath);
-        var_dump($arBreadcrumbs);*/
-
         $response = [
             'current_path' => $path,
             'canonical_current_path' => str_replace ( '//', '/', $storagePath)
@@ -112,10 +106,16 @@ class FileActionsController extends AbstractController
         $arrDirectories = $this->getStorageDirectories($storagePath);
         $arrFiles = $this->getStorageFiles($storagePath, $fileType);
 
+
+        $breadcrumbs = $this->makeBreadcrumbs($storagePath);
+
+
         //$response['empty_disk'] = false;
         $response['folders'] = $arrDirectories;
         $response['files'] = $arrFiles;
-        $response['breadcrumbs'] = $this->makeBreadcrumbs($storagePath);
+        $response['breadcrumbs'] = $breadcrumbs;
+        $response['breadcrumbs_cnt'] = count($breadcrumbs);
+
 
         return $this->render('user-data.html.twig', [
             'response' => $response,
@@ -228,7 +228,11 @@ class FileActionsController extends AbstractController
     }
 
 
-
+    /**Сборка хлебной крошки
+     *
+     * @param $storagePath
+     * @return array
+     */
     private function makeBreadcrumbs($storagePath) {
         $arLink = explode('/', $storagePath);
 
@@ -237,34 +241,35 @@ class FileActionsController extends AbstractController
             'public', 'storage', 'user_'.$this->userId, 'disk'
         ];
 
-
         $userDiskRoot = "/get-files/user_$this->userId-disk";
 
         $arBreadcrumbs = [];
+        $arBreadcrumbs[$userDiskRoot] = ucfirst($this->getFolderName($userDiskRoot));
         $breadcrumbElement = '';
 
         foreach ($arLink as $link) {
             if (in_array($link, $arrLinkForExclude)) continue;
             $breadcrumbElement .= '-'.$link;
             $breadcrumbElement = trim($breadcrumbElement, '-');
-            $arBreadcrumbs[] = $userDiskRoot .'-'. $breadcrumbElement;
+            $link = $userDiskRoot .'-'. $breadcrumbElement;
+            $arBreadcrumbs[$link] = ucfirst($this->getFolderName($link));
         }
 
-/*        if (count($arBreadcrumbs) > 1) {
-            array_pop($arBreadcrumbs);
-        }*/
 
-
-        //var_dump($arBreadcrumbs);
-        //var_dump(count($arBreadcrumbs));
-
-
-/*       if (count($arBreadcrumbs) > 0) {
-            array_unshift($arBreadcrumbs , $userDiskRoot);
-        }*/
+        if ($_SERVER['REQUEST_URI'] == $userDiskRoot) {
+            $arBreadcrumbs = [];
+        }
 
 
         return $arBreadcrumbs;
+    }
+
+
+
+    private function getFolderName($folderLink) {
+        $arLink = explode('-', $folderLink);
+        $folderName = end($arLink);
+        return $folderName;
     }
 
 }

@@ -45,31 +45,37 @@ class FileSystemService {
 
 
     public function getUserBasePath() {
-        $userId = $this->security->getUser()->getId();
-        return "user_".$userId."/disk/";
+        if ($this->security->isGranted('IS_AUTHENTICATED_FULLY')) {
+            $userId = $this->security->getUser()->getId();
+            $res = "user_".$userId."/disk/";
+        } else {
+            $res = false;
+        }
+
+        return $res;
     }
 
 
     public function getUserBasketPath() {
-        $userId = $this->security->getUser()->getId();
-        return "user_".$userId."/basket/";
+        if ($this->security->isGranted('IS_AUTHENTICATED_FULLY')) {
+            $userId = $this->security->getUser()->getId();
+            $res = "user_".$userId."/basket/";
+        } else {
+            $res = false;
+        }
+
+        return $res;
     }
+
 
     public function getUserId() {
-        return $this->security->getUser()->getId();
+        if ($this->security->isGranted('IS_AUTHENTICATED_FULLY')) {
+            $res = $this->security->getUser()->getId();
+        } else {
+            $res = false;
+        }
+        return $res;
     }
-
-
-
-    /*    public function createFolder(string $folderPath) {
-            try {
-                $this->fileSystem->mkdir($_SERVER['DOCUMENT_ROOT'] . $folderPath);
-
-            } catch (IOExceptionInterface $exception) {
-                echo "An error occurred while creating your directory at ".$exception->getPath();
-            }
-        }*/
-
 
 
     public function move($origin, $target, $type = false) {
@@ -86,7 +92,6 @@ class FileSystemService {
 
         }
     }
-
 
 
     public function copy($origin, $target) {
