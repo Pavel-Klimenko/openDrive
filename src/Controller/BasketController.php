@@ -62,17 +62,29 @@ class BasketController extends AbstractController
      */
     public function fileDelete(Request $request)
     {
-
+        $filePath= $request->get('filePath');
         $fileName = $request->get('fileName');
+        $basketItemSQL = $this->getBasketItemByName($fileName);
+
+        $fileLink = $filePath.'/'.$fileName;
 
         //adding to the basket or deleteting completely
         if ($request->get('deleteCompletely') == 'Y') {
-            $link = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->userBasePath . $fileName;
-            $this->fileSystem->remove($link);
+            //$status = 'deleteCompletely';
+            $basketLink = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->userBasketPath . $fileName;
+            $this->fileSystem->remove($basketLink);
+
+            //delete from database
+            $this->entityManager->remove($basketItemSQL);
+            $this->entityManager->flush();
+        } elseif ($basketItemSQL) {
+            //delete if this file exist in the database
+            //$status = '$basketItemSQL';
+            $this->fileSystem->remove($fileLink);
         } else {
-            $filePath= $request->get('filePath');
-            $link = $filePath.'/'.$fileName;
-            $this->addFileToBasket($link);
+            //$filePath= $request->get('filePath');
+            $this->addFileToBasket($fileLink);
+            //$status = 'addToBasket';
         }
 
 

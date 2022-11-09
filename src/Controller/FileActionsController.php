@@ -107,6 +107,8 @@ class FileActionsController extends AbstractController
         $arrFiles = $this->getStorageFiles($storagePath, $fileType);
 
 
+
+
         $breadcrumbs = $this->makeBreadcrumbs($storagePath);
 
 
@@ -153,37 +155,38 @@ class FileActionsController extends AbstractController
             $counter = 0;
             foreach ($finder as $file) {
 
-
                 //var_dump($file);
 
-                //$fileName = $file->getRelativePathname();
-                $fileName = $file->getFileName();
+                $fileName = $file->getRelativePathname();
+                //$fileName = $file->getFileName();
 
                 $fileUrl = stristr($file->getPathName(), '/storage/');
                 $fileSize = $this->fileSystem->FileSizeConvert($file->getSize());
 
-
                 list($name, $extension) = explode('.', $fileName);
                 $fileType = $this->fileSystem->getFileType($extension);
 
-                if (!empty($arrFileExtensions)) {
-                    //selected type of files
-                    if (in_array($extension, $arrFileExtensions)) {
+
+                if ($fileName && !strpos($fileName, '/')) {
+                    if (!empty($arrFileExtensions)) {
+                        //selected type of files
+                        if (in_array($extension, $arrFileExtensions)) {
+                            $arrResult[$counter]['FILE_URL'] = $fileUrl;
+                            $arrResult[$counter]['NAME'] = $fileName;
+                            $arrResult[$counter]['EXTENSION'] = $extension;
+                            $arrResult[$counter]['FILE_TYPE'] = $fileType;
+                            $arrResult[$counter]['FILE_STYLES'] = $this->fileSystem->getFileStyles($type);
+                            $arrResult[$counter]['FILE_SIZE'] = $fileSize;
+                        }
+                    } else {
+                        //all files
                         $arrResult[$counter]['FILE_URL'] = $fileUrl;
                         $arrResult[$counter]['NAME'] = $fileName;
                         $arrResult[$counter]['EXTENSION'] = $extension;
                         $arrResult[$counter]['FILE_TYPE'] = $fileType;
-                        $arrResult[$counter]['FILE_STYLES'] = $this->fileSystem->getFileStyles($type);
+                        $arrResult[$counter]['FILE_STYLES'] = $this->fileSystem->getFileStyles($fileType);
                         $arrResult[$counter]['FILE_SIZE'] = $fileSize;
                     }
-                } else {
-                    //all files
-                    $arrResult[$counter]['FILE_URL'] = $fileUrl;
-                    $arrResult[$counter]['NAME'] = $fileName;
-                    $arrResult[$counter]['EXTENSION'] = $extension;
-                    $arrResult[$counter]['FILE_TYPE'] = $fileType;
-                    $arrResult[$counter]['FILE_STYLES'] = $this->fileSystem->getFileStyles($fileType);
-                    $arrResult[$counter]['FILE_SIZE'] = $fileSize;
                 }
 
                 $counter++;
@@ -204,6 +207,10 @@ class FileActionsController extends AbstractController
         if ($finder->hasResults()) {
             foreach ($finder as $directory) {
                 $directoryName = $directory->getRelativePathname();
+
+
+                //var_dump($directoryName);
+
                 if ($directoryName && !strpos($directoryName, '/')) {
                     $arrResult[] = $directoryName;
                 }
