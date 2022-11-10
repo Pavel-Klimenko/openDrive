@@ -28,7 +28,6 @@ $( document ).ready(function() {
         contextMenu['props'] = {name: 'Properties'};
         contextMenu['delete'] = {name: 'Delete'};
 
-
         //Inside the basket
         let pathName = window.location.pathname;
         if (pathName.includes('/basket/')) {
@@ -51,7 +50,11 @@ $( document ).ready(function() {
                 if (menuAction === 'copy' || menuAction === 'move') {
                     copyFile(filePath, fileName, menuAction);
                 } else if (menuAction === 'paste') {
-                    pasteFile(filePath);
+                    if (filePath === response.file_path) {
+                        alert('You can`t paste file to the same folder');
+                    } else {
+                        pasteFile(filePath);
+                    }
                 } else if (menuAction === 'rename') {
                     renameFile(filePath, fileName);
                 } else if (menuAction === 'download') {
@@ -66,7 +69,6 @@ $( document ).ready(function() {
                     restoreFileFromBasket(fileName);
                 }
             }
-
         });
 
 
@@ -112,9 +114,9 @@ function renameFile(filePath, fileName) {
 function showFileProps(fileName, fileLocation, fileSize) {
     $('.modal-body').empty();
     $('#popupFileProps').modal("show");
-    $('.modal-body').append(`<p><b>File name: </b>${fileName}</p>`);
-    $('.modal-body').append(`<p><b>File location: </b>${fileLocation}</p>`);
-    $('.modal-body').append(`<p><b>File size: </b>${fileSize}</p>`);
+    $('.modal-body').append(`<p><b>Name: </b>${fileName}</p>`);
+    $('.modal-body').append(`<p><b>Location: </b>${fileLocation}</p>`);
+    $('.modal-body').append(`<p><b>Size: </b>${fileSize}</p>`);
 }
 
 function deleteFolder(folderPath, folderName) {
@@ -148,8 +150,6 @@ function downLoadFile(url) {
     document.body.removeChild(link_url);
     delete link_url;
 }
-
-
 
 function getExchangeBuffer(handleData) {
     var request = $.ajax({

@@ -9,8 +9,6 @@
 namespace App\GlobalFunctions;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use App\Entity\User;
-use Doctrine\ORM\EntityManagerInterface;
 
 
 class Helper extends AbstractController {
@@ -26,7 +24,6 @@ class Helper extends AbstractController {
         if ($precision) $percent = round($percent, $precision);
         return $percent;
     }
-
 
     public static function getDirectorySize(string $folderPath):int
     {
@@ -44,6 +41,17 @@ class Helper extends AbstractController {
         }
 
         return $size;
+    }
+
+    public static function getFileStoragePath($path) {
+        if (str_contains($path, '-')) {
+            $arLink = explode('-', $path);
+            $storagePath = $_SERVER['DOCUMENT_ROOT'] . '/storage/' . implode('/', $arLink);
+        } else {
+            $storagePath = $_SERVER['DOCUMENT_ROOT'] . '/storage/' . $path;
+        }
+
+        return $storagePath;
     }
 
 }

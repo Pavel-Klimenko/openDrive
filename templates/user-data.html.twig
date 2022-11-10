@@ -13,7 +13,6 @@
 
                 <div class="fm-search">
                     {#breadcrumbs#}
-
                     {% for folderLink, folderName in response.breadcrumbs %}
                         {% if loop.index != response.breadcrumbs_cnt %}
                             <a href="{{ folderLink }}">{{ folderName }}</a> -
@@ -30,8 +29,6 @@
 
 
                 {% if response.folders %}
-                    {#TODO сделать хлебную крошку#}
-
                     <h5>Folders:</h5>
                     <div class="row mt-3">
                         {% for foldername in response.folders %}
@@ -53,8 +50,6 @@
                                         </div>
 
                                             <h6 class="mb-0 text-primary">{{ foldername }}</h6>
-
-
                                         {#<small>15 files</small>#}
                                     </div>
                                 </div>
@@ -118,10 +113,9 @@
         </div>
     </div>
 
-    {# Modal windows #}
 
+    {# Modal windows #}
     {{ include('inc/popup_file_props.twig') }}
     {{ include('inc/popup_file_rename.twig') }}
     {{ include('inc/popup_folder_create.twig') }}
-
 {% endblock %}

@@ -14,10 +14,8 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Basket;
-use App\Controller\FileActionsController;
 
 use RecursiveDirectoryIterator;
 use FilesystemIterator;
@@ -31,7 +29,6 @@ class BasketController extends AbstractController
     private $coreFileSystem;
     private $exchangeBuffer;
     private $fileActionsController;
-
 
     private $userBasePath;
     private $userId;
@@ -49,7 +46,6 @@ class BasketController extends AbstractController
         $this->coreFileSystem = new Filesystem();
         $this->exchangeBuffer = $exchangeBuffer;
         $this->fileActionsController = $fileActionsController;
-
 
         $this->userBasePath = $this->fileSystem->getUserBasePath();
         $this->userId = $this->fileSystem->getUserId();
@@ -70,23 +66,17 @@ class BasketController extends AbstractController
 
         //adding to the basket or deleteting completely
         if ($request->get('deleteCompletely') == 'Y') {
-            //$status = 'deleteCompletely';
             $basketLink = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->userBasketPath . $fileName;
             $this->fileSystem->remove($basketLink);
-
             //delete from database
             $this->entityManager->remove($basketItemSQL);
             $this->entityManager->flush();
         } elseif ($basketItemSQL) {
             //delete if this file exist in the database
-            //$status = '$basketItemSQL';
             $this->fileSystem->remove($fileLink);
         } else {
-            //$filePath= $request->get('filePath');
             $this->addFileToBasket($fileLink);
-            //$status = 'addToBasket';
         }
-
 
         return new Response(Response::HTTP_OK);
     }
@@ -108,12 +98,7 @@ class BasketController extends AbstractController
      */
     public function getBasket()
     {
-
         $basket = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $this->userBasketPath;
-
-
-        //var_dump($basket);
-
         $arrDirectories = $this->fileActionsController->getStorageDirectories($basket);
         $arrFiles = $this->fileActionsController->getStorageFiles($basket);
 
@@ -129,8 +114,6 @@ class BasketController extends AbstractController
         return $this->render('basket.html.twig', [
             'response' => $response,
         ]);
-
-
     }
 
 
@@ -154,9 +137,7 @@ class BasketController extends AbstractController
         }
 
         $this->deleteAllUserBasketRows($this->userId);
-
         return $this->redirectToRoute('getBasket');
-
     }
 
 
@@ -171,6 +152,7 @@ class BasketController extends AbstractController
             $this->entityManager->flush();
         }
     }
+
 
     private function addFileToBasket($origin)
     {
@@ -192,7 +174,6 @@ class BasketController extends AbstractController
             $this->entityManager->persist($basket);
             $this->entityManager->flush();
         }
-
     }
 
     private function restoreFile($fileName)
@@ -216,5 +197,4 @@ class BasketController extends AbstractController
 
         return $basketItem;
     }
-
 }

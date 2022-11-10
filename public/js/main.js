@@ -1,29 +1,21 @@
 $( document ).ready(function() {
-
-    $("#newFile").change(function(){ // событие выбора файла
-        $("#uploadFileForm").submit(); // отправка формы
+    $("#newFile").change(function(){ //file select event
+        $("#uploadFileForm").submit(); //form submission
     });
-
 
     $( "#createFolder" ).click(function() {
-        let folderPath = $('#currentPath').val();
-        createFolder(folderPath);
+        createFolder($('#currentPath').val());
     });
-
 
     $(".choose-tariff").click(function() {
         let tariff = $(this).data('tariff');
 
-        if (tariff == 'free') {
+        if ($(this).data('tariff') == 'free') {
             document.location.href = '/register?tariff=' + tariff;
         } else {
             alert('This tariff is unavailable now');
         }
-
     });
-
-
-    //TODO придумать нормальную хлебную крошку
 });
 
 

@@ -8,12 +8,7 @@
 
 namespace App\Services;
 
-use App\Services;
-use App\Entity\Basket;
-use phpDocumentor\Reflection\Type;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
-use Symfony\Component\Filesystem\Path;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Security;
 
@@ -30,9 +25,6 @@ class FileSystemService {
         'documents' => ['txt', 'doc', 'doc', 'pdf'],
         'archives' => ['rar', 'zip', '7z', 'tar'],
     ];
-
-
-    //public CONST BASE_PATH = 'user_5/disk/';
 
     public CONST STORAGE_PATH = '/storage/';
 

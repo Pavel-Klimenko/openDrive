@@ -24,6 +24,7 @@ class ContextMenuController extends AbstractController
     private $entityManager;
     private $coreFileSystem;
     private $exchangeBuffer;
+    private $userId;
 
 
 
@@ -37,6 +38,7 @@ class ContextMenuController extends AbstractController
         $this->fileSystem = $fileSystem;
         $this->coreFileSystem = new Filesystem();
         $this->exchangeBuffer = $exchangeBuffer;
+        $this->userId = $this->fileSystem->getUserId();
     }
 
 
@@ -45,13 +47,11 @@ class ContextMenuController extends AbstractController
      */
     public function copyFile(Request $request)
     {
-        //TODO добавить пользователя после создания регистрации, авторизации
-        $userId = 1;
         $action = $request->get('action');
         $filePath= $request->get('filePath');
         $fileName = $request->get('fileName');
 
-        $this->exchangeBuffer->setBufferAction($userId, $action, $filePath, $fileName);
+        $this->exchangeBuffer->setBufferAction($this->userId, $action, $filePath, $fileName);
 
         $jsonData = [
             'filePath' => $filePath,
@@ -69,12 +69,7 @@ class ContextMenuController extends AbstractController
      */
     public function pasteFile(Request $request)
     {
-
-        //TODO copy, move в ту же папку баг
-
-
-        $userId = 1;
-        $copiedFile = $this->exchangeBuffer->getBufferAction($userId);
+        $copiedFile = $this->exchangeBuffer->getBufferAction($this->userId);
         $origin = $copiedFile->getFilePath() . '/' . $copiedFile->getFile();
         $target = $request->get('filePath') . '/' . $copiedFile->getFile();
         $action = $copiedFile->getAction();
@@ -86,7 +81,7 @@ class ContextMenuController extends AbstractController
             $this->fileSystem->copy($origin, $target);
         }
 
-        $this->exchangeBuffer->deleteBufferAction($userId, $action);
+        $this->exchangeBuffer->deleteBufferAction($this->userId, $action);
 
         $jsonData = [
             'origin' => $origin,
@@ -126,8 +121,10 @@ class ContextMenuController extends AbstractController
      */
     public function downloadFile($linkToFile)
     {
-        $userBasePath = $this->fileSystem->getUserBasePath();
-        $linkToFile = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $userBasePath . $linkToFile;
+        $linkToFile = $_SERVER['DOCUMENT_ROOT']
+            . $this->fileSystem::STORAGE_PATH
+            . $this->fileSystem->getUserBasePath()
+            . $linkToFile;
         return $this->file($linkToFile);
     }
 
@@ -156,40 +153,6 @@ class ContextMenuController extends AbstractController
         $this->coreFileSystem->mkdir($link);
         header('Location: ' . $_SERVER['HTTP_REFERER']);
         return new Response(Response::HTTP_OK);
-
-    }
-
-
-
-    /**
-     * @Route("/file-properties/{linkToFile}")
-     */
-    public function getFileProps($linkToFile)
-    {
-        $userBasePath = $this->fileSystem->getUserBasePath();
-        $linkToFile = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . $userBasePath . $linkToFile;
-        $fileProps = stat($linkToFile);
-
-        $arLink = explode('/', $linkToFile);
-        $file = end($arLink);
-        $arFile = explode('.', $file);
-        $fileExtension = end($arFile);
-
-
-        $response = [
-            'file-path' => $linkToFile,
-            'file-extension' =>$fileExtension,
-            'size' => $this->fileSystem->FileSizeConvert($fileProps['size']),
-            'last-modified' => date('d.m.Y h:i:s A', $fileProps['ctime']),
-        ];
-
-
-        var_dump($response);
-
-        return new Response(
-            'showFolder',
-            Response::HTTP_OK
-        );
     }
 
 
@@ -197,9 +160,7 @@ class ContextMenuController extends AbstractController
      * @Route("/get-exchange-buffer")
      */
     public function getExchangeBuffer(Request $request) {
-
-        $userId = 1;
-        $bufferRow = $this->exchangeBuffer->getBufferAction($userId);
+        $bufferRow = $this->exchangeBuffer->getBufferAction($this->userId);
 
         if ($bufferRow) {
             $jsonResponse = [

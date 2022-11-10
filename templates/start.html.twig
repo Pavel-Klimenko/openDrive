@@ -5,8 +5,16 @@
 
 {% block body %}
 
+    <h3>About OpenDrive:</h3>
 
-    <h1>Select disk tariff:</h1><br />
+    <div>
+        <p>OpenDrive is a modern cloud service developed on PHP framework Symfony 6.1.1.</p>
+        <p>You can choose three base tarrifs: Basic, Standard, FREE. This is alfa version of service so only FREE tarrif is available now.</p>
+        <p>Our service allows you to create your own disk storage space, make directory hierarchy, upload your files. Also you may doing all standart manipulations with files: copying, move, rename, put into basket, showing file propertios.</p>
+    </div>
+
+
+    <h3>Select disk tariff:</h3>
 
     <h5>If you have an account you may <a href="{{ path('app_login') }}">Login.</a> If you haven`t an account you
         need to choose tariff and register account</h5>
@@ -24,7 +32,7 @@
             </ul>
 
             <div class="card-footer choose-tariff" style="cursor: pointer" data-tariff="basic">
-                <small class="text-muted">Select tariff</small>
+                <b class="text-muted">Select</b>
             </div>
         </div>
 
@@ -40,7 +48,7 @@
             </ul>
 
             <div class="card-footer choose-tariff" style="cursor: pointer" data-tariff="standard">
-                <small class="text-muted choose-tariff">Select tariff</small>
+                <b class="text-muted choose-tariff">Select</b>
             </div>
         </div>
 
@@ -50,12 +58,8 @@
                 <p class="card-text">This is test tariff for demonstration OpenDrive functionality. You may select it and register new user. Your storage space will be created automatically after your registration</p>
             </div>
             <div class="card-footer choose-tariff" style="cursor: pointer" data-tariff="free">
-                <small class="text-muted">Select tariff</small>
+                <b class="text-muted">Select</b>
             </div>
         </div>
     </div><br />
-
-
-
-
 {% endblock %}

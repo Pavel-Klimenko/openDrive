@@ -8,27 +8,16 @@
 
 namespace App\Controller;
 
-use App\Entity\Basket;
-use App\Entity\ExchangeBuffer;
 use App\Services;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller;
 use Symfony\Component\Security\Core\Security;
-
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
-
-use App\GlobalFunctions\Helper;
-
 use Symfony\Component\Finder\Finder;
-
-use RecursiveDirectoryIterator;
-use FilesystemIterator;
-use RecursiveIteratorIterator;
+use App\GlobalFunctions\Helper;
 
 
 
@@ -41,7 +30,6 @@ class FileActionsController extends AbstractController
     private $entityManager;
 
     private $security;
-
     private $userId;
 
     public function __construct(
@@ -54,30 +42,21 @@ class FileActionsController extends AbstractController
         $this->fileSystem = $fileSystem;
         $this->coreFileSystem = new Filesystem();
         $this->security = $security;
-
         $this->userId = $this->fileSystem->getUserId();
     }
 
-
-    /*TODO прописать нормальные роуты*/
     /**
      * @Route("/", name="showStartPage")
      */
     public function renderMainPage()
     {
         if ($this->security->isGranted('IS_AUTHENTICATED_FULLY')) {
-
             $userId = $this->security->getUser()->getId();
-
             return $this->redirect("/get-files/user_$userId-disk");
         } else {
             return $this->render('start.html.twig', []);
         }
     }
-
-
-
-    /*TODO прописать нормальные роуты*/
 
     /**
      * @Route("/get-files/{path}/{fileType}", name="getFiles")
@@ -88,13 +67,7 @@ class FileActionsController extends AbstractController
             return $this->redirectToRoute('showStartPage');
         }
 
-
-        if (str_contains($path, '-')) {
-            $arLink = explode('-', $path);
-            $storagePath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH . implode('/', $arLink);
-        } else {
-            $storagePath = $_SERVER['DOCUMENT_ROOT'] . $this->fileSystem::STORAGE_PATH .$path;
-        }
+        $storagePath = Helper::getFileStoragePath($path);
 
 
         $response = [
@@ -107,12 +80,8 @@ class FileActionsController extends AbstractController
         $arrFiles = $this->getStorageFiles($storagePath, $fileType);
 
 
-
-
         $breadcrumbs = $this->makeBreadcrumbs($storagePath);
 
-
-        //$response['empty_disk'] = false;
         $response['folders'] = $arrDirectories;
         $response['files'] = $arrFiles;
         $response['breadcrumbs'] = $breadcrumbs;
@@ -122,27 +91,7 @@ class FileActionsController extends AbstractController
         return $this->render('user-data.html.twig', [
             'response' => $response,
         ]);
-
     }
-
-
-
-    /**
-     * @Route("/create-folder")
-     */
-    public function createFolder()
-    {
-
-        $path = '/storage/user_files/newFolder21212';
-        $this->fileSystem->createFolder($path);
-
-
-        return new Response(
-            'createFolder',
-            Response::HTTP_OK
-        );
-    }
-
 
     public function getStorageFiles(string $storagePath, $type = false) {
         $arrFileExtensions = $this->fileSystem->getFileTypeExtensions($type);
@@ -154,12 +103,7 @@ class FileActionsController extends AbstractController
         if ($finder->hasResults()) {
             $counter = 0;
             foreach ($finder as $file) {
-
-                //var_dump($file);
-
                 $fileName = $file->getRelativePathname();
-                //$fileName = $file->getFileName();
-
                 $fileUrl = stristr($file->getPathName(), '/storage/');
                 $fileSize = $this->fileSystem->FileSizeConvert($file->getSize());
 
@@ -197,7 +141,6 @@ class FileActionsController extends AbstractController
         return $arrResult;
     }
 
-
     public function getStorageDirectories(string $storagePath)
     {
         $finder = new Finder();
@@ -208,9 +151,6 @@ class FileActionsController extends AbstractController
             foreach ($finder as $directory) {
                 $directoryName = $directory->getRelativePathname();
 
-
-                //var_dump($directoryName);
-
                 if ($directoryName && !strpos($directoryName, '/')) {
                     $arrResult[] = $directoryName;
                 }
@@ -219,7 +159,6 @@ class FileActionsController extends AbstractController
 
         return $arrResult;
     }
-
 
     /**
      * @Route("/file-upload", name="fileUpload")
@@ -233,7 +172,6 @@ class FileActionsController extends AbstractController
         header("Location: ".$_SERVER['HTTP_REFERER']);
         return new Response('fileUpload', Response::HTTP_OK);
     }
-
 
     /**Сборка хлебной крошки
      *
@@ -270,8 +208,6 @@ class FileActionsController extends AbstractController
 
         return $arBreadcrumbs;
     }
-
-
 
     private function getFolderName($folderLink) {
         $arLink = explode('-', $folderLink);
