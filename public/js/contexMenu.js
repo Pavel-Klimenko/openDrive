@@ -179,7 +179,7 @@ function menuActionAjaxRequest(url, data) {
 
     request.done(function (msg) {
         console.log(msg);
-        //location.reload();
+        location.reload();
     });
 
     request.fail(function (jqXHR, textStatus) {
